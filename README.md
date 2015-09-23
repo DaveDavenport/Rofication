@@ -24,12 +24,12 @@ i3blocks for notification and python for `d-bus`.
 # Structure
 
 ```
---------------           ---------------------                     ------------------
-| application| --dbus--> | rofication-daemon | <--- unix-socket --> | rofication-gui |
---------------           ---------------------        |             ------------------
-                                |                     |             ----------------------------
-                                |                     \-----------> | rofication-statusi3blocks|
-                            <hdd:json-db>                           ----------------------------
+┌─────────────┐           ┌───────────────────┐                      ┌────────────────┐
+│ application │ --dbus--> │ rofication-daemon │ <--- unix-socket --> │ rofication-gui │
+└─────────────┘           └───────────────────┘       │              └────────────────┘
+                                |                     │             ┌──────────────────────────┐
+                                |                     \-----------> │ rofication-statusi3blocks│
+                            <hdd:json-db>                           └──────────────────────────┘
 ```
 
 ## Daemon
