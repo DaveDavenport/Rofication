@@ -19,8 +19,17 @@ event = threading.Event()
 notification_queue = []
 notification_queue_lock = threading.Lock()
 
+
+singlenot_app=[ "VLC media player" ]
+
+
 def add_notification(notif):
     with notification_queue_lock:
+        if notif.application in singlenot_app:
+            n = [ n for n in notification_queue if n.application == notif.application ];
+            for no in n:
+                notification_queue.remove(no)
+
         notification_queue.append(notif)
 
 def message_thread(dummy):
@@ -78,9 +87,9 @@ class NotificationFetcher(dbus.service.Object):
     def Notify(self, app_name, notification_id, app_icon,
                summary, body, actions, hints, expire_timeout):
         msg = Msg()
-        if not notification_id:
-            self._id += 1
-            notification_id = self._id
+        # find id.
+        self._id += 1
+        notification_id = self._id
         msg.application = str(app_name)
         msg.mid     = notification_id
         msg.summary = str(summary)
@@ -118,6 +127,11 @@ if __name__ == '__main__':
             notification_queue = jsonpickle.decode(f.read())
     except:
         pass
+
+    for noti in notification_queue:
+        if nf._id < noti.mid:
+            nf._id = int(noti.mid)
+    print("Found last id: {nid}".format(nid=nf._id))
     # Thread handling sockets.
     t1 = threading.Thread(target=message_thread, args=[None])
     t1.start()
