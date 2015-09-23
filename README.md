@@ -13,10 +13,13 @@ To summarize:
 
 # Techniques used
 
-**Rofication** implements a notification daemon following the [Galago Desktop Notificaiton
+**Rofication** implements a notification daemon following the [Galago Desktop Notification
 standard](http://www.galago-project.org/specs/notification/).  This is used by most linux desktop
 environments and most relevant application support this. It is easily scriptable using
 `notify-send`.  **Rofication** aims to be a drop-in replacement for existing notification daemons.
+
+**Rofication** tries to re-use as much existing as possible. It uses **Rofi** for displaying, 
+i3blocks for notification and python for `d-bus`.
 
 # Structure
 
