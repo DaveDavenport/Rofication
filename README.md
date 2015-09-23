@@ -6,7 +6,9 @@ centers on android and windows 10.
 To summarize:
 
  * 1 point to see if there are notifications.
+![Notification Bar](https://raw.githubusercontent.com/DaveDavenport/Rofication/master/Picture/bar.png)
  * An application to view all open notifications.
+![Notification Bar](https://raw.githubusercontent.com/DaveDavenport/Rofication/master/Picture/client.png)
  * Notifications are persistent, until dismissed. Even over reboots.
 
 # Techniques used
