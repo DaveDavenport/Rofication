@@ -1,18 +1,19 @@
 # Rofication
 
 **Rofication** is a minimalistic notification system. It is loosely modeled after notification
-centers on android and windows 10. The main idea is, to not annoy (e.g. overlap parts of my
+centers on android and windows 10. The main idea is to not annoy (e.g. overlap parts of my
 desktop) but still keep a persistent list of messages. Notifications are useful, however to many
-notification often (e.g. my work mail popups fall in this category) distract from the current task
-and are dismissed without proper reviewing. The goal is to show (in a single clear place) there are
-notifications but not pop them up. It is up to the user to review the notifications when time is
-available. If things are critical one should use a more direct media (e.g. face to face or phone). 
+notification showing up to often (e.g. my work mail popups fall in this category) distract from the
+current task and are therefor dismissed without proper reviewing. The goal is to show (in a single
+clear place) there are notifications but not pop them up. It is up to the user to review the
+notifications when time is available. If things are critical one should use a more direct media
+(e.g. face to face or phone). 
 
 To summarize **Rofications**, it has:
 
  * 1 point to see if there are notifications. For example the status bar of your Desktop
    Environment.
-e[Notification Bar](https://raw.githubusercontent.com/DaveDavenport/Rofication/master/Picture/bar.png)
+![Notification Bar](https://raw.githubusercontent.com/DaveDavenport/Rofication/master/Picture/bar.png)
  * An application to (re)view all open notifications.
 ![Notification Bar](https://raw.githubusercontent.com/DaveDavenport/Rofication/master/Picture/client.png)
  * Persistent notifications, they stay around until dismissed. They should stick around, even over reboots.
@@ -20,8 +21,8 @@ e[Notification Bar](https://raw.githubusercontent.com/DaveDavenport/Rofication/m
 # Techniques used
 
 **Rofication** implements a notification daemon following the [Galago Desktop Notification
-standard](http://www.galago-project.org/specs/notification/).  This is used by most linux desktop
-environments and most relevant application support this. It is easily scriptable using
+standard](http://www.galago-project.org/specs/notification/).  This is used by most Linux desktop
+environment and most relevant application support this. It is easily script-able using
 `notify-send`.  **Rofication** aims to be a drop-in replacement for existing notification daemons.
 
 **Rofication** tries to re-use as much existing as possible. It uses **Rofi** for displaying, 
