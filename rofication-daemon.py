@@ -42,8 +42,8 @@ class Rofication(threading.Thread):
         print("Loading rofication")
         try:
             with open('not.json', 'r') as f:
-                    self.notification_queue = jsonpickle.decode(f.read())
-        except:
+                     self.notification_queue = jsonpickle.decode(f.read())
+        except:    
             pass
 
         for noti in self.notification_queue:
@@ -165,15 +165,15 @@ class NotificationFetcher(dbus.service.Object):
         msg = Msg()
         # find id.
         self._id += 1
-        msg.application = str(app_name)
-        msg.notid   = notification_id
-        msg.mid     = self._id 
-        msg.summary = str(summary)
-        msg.body    = str(body)
+        msg.application  = str(app_name)
+        msg.notid        = notification_id
+        msg.mid          = self._id 
+        msg.summary      = str(summary)
+        msg.body         = str(body)
         if int(expire_timeout) > 0:
-            msg.deadline= time.time()+int(expire_timeout) / 1000.0
+            msg.deadline = time.time()+int(expire_timeout) / 1000.0
         if 'urgency' in hints:
-            msg.urgency = int(hints['urgency'])
+            msg.urgency  = int(hints['urgency'])
         self._rofication.add_notification( msg )
         return notification_id
 
