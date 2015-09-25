@@ -9,7 +9,7 @@ class Msg():
     def __init__(self):
         self.mid=0
         self.message=""
-        self.timeout=""
+        self.deadline=-1
         self.summary=""
         self.body=""
         self.application="n/a"

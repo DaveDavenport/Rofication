@@ -12,20 +12,38 @@ import time
 import socket
 import json
 
-NOT_MAX_LENGTH=256
 from msg import Msg,Urgency
 
 event = threading.Event()
 notification_queue = []
 notification_queue_lock = threading.Lock()
 
+"""
+    This is a list of applications where only the last notification is relevant.
+    Applications like media players fall in this category.
+"""
+single_notification_app=[ "VLC media player" ]
 
-singlenot_app=[ "VLC media player" ]
+"""
+    A list of applications that are allowed to expire.
+"""
+allowed_expire_app=[ ]
 
+
+"""
+    This function updates the queue. E.g. removes popups that are expired and allowed to expire
+"""
+def update_queue():
+    with notification_queue_lock:
+        now = time.time()
+        n = [ n for n in notification_queue if n.application in allowed_expire_app and n.deadline > 0 and n.deadline < now ];
+        for no in n:
+            print("{mid} expired.".format(mid=no.mid))
+            notification_queue.remove(no)
 
 def add_notification(notif):
     with notification_queue_lock:
-        if notif.application in singlenot_app:
+        if notif.application in  single_notification_app:
             n = [ n for n in notification_queue if n.application == notif.application ];
             for no in n:
                 notification_queue.remove(no)
@@ -40,6 +58,7 @@ def message_thread(dummy):
     while 1:
         try:
             connection, client_address = server.accept()
+            update_queue()
             try:
                 data = connection.recv(4)
                 data = data.decode('utf-8')
@@ -78,6 +97,9 @@ def message_thread(dummy):
     server.close()
     os.unlink("/tmp/rofi_notification_daemon")
 
+"""
+    DBUS Notification Listener and Fetcher.
+"""
 class NotificationFetcher(dbus.service.Object):
     _id = 0
 
@@ -94,7 +116,8 @@ class NotificationFetcher(dbus.service.Object):
         msg.mid     = notification_id
         msg.summary = str(summary)
         msg.body    = str(body)
-        msg.timeout = int(expire_timeout) / 1000.0
+        if int(expire_timeout) > 0:
+            msg.deadline= time.time()+int(expire_timeout) / 1000.0
         if 'urgency' in hints:
             msg.urgency = int(hints['urgency'])
         add_notification( msg )
