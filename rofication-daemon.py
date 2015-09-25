@@ -32,8 +32,9 @@ allowed_expire_app=[ ]
 class Rofication(threading.Thread):
     
     def __init__(self):
-        self.notification_queue = []
+        self.socket_path = "/tmp/rofi_notification_daemon"
         self.notification_queue_lock = threading.Lock()
+        self.notification_queue = []
         self.last_id=0
         super().__init__()
 
@@ -54,7 +55,6 @@ class Rofication(threading.Thread):
     def save(self):
         print("Saving rofication")
         try:
-            print(len(self.notification_queue))
             with open('not.json','w') as f:
                 f.write(jsonpickle.encode(self.notification_queue))
         except:
@@ -118,7 +118,7 @@ class Rofication(threading.Thread):
 
     def run(self):
         server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        server.bind("/tmp/rofi_notification_daemon")
+        server.bind(self.socket_path)
         server.listen(1)
         server.settimeout(1)
         while 1:
