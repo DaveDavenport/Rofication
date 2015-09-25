@@ -41,6 +41,13 @@ def update_queue():
             print("{mid} expired.".format(mid=no.mid))
             notification_queue.remove(no)
 
+def remove_notification(id):
+    printf("Removing: {}".format(id))
+    with notification_queue_lock:
+        n = [ n for n in notification_queue_lock if n.notid == id ]
+        for no in n:
+            print("Closing: {id}:{sum}".format(id=no.mid, sum=no.application))
+
 def add_notification(notif):
     with notification_queue_lock:
         if notif.application in  single_notification_app:
@@ -111,9 +118,9 @@ class NotificationFetcher(dbus.service.Object):
         msg = Msg()
         # find id.
         self._id += 1
-        notification_id = self._id
         msg.application = str(app_name)
-        msg.mid     = notification_id
+        msg.notid   = notification_id
+        msg.mid     = self._id 
         msg.summary = str(summary)
         msg.body    = str(body)
         if int(expire_timeout) > 0:
@@ -129,10 +136,12 @@ class NotificationFetcher(dbus.service.Object):
 
     @dbus.service.signal('org.freedesktop.Notifications', signature='uu')
     def NotificationClosed(self, id_in, reason_in):
+        remove_notification(id_in)
         pass
 
     @dbus.service.method("org.freedesktop.Notifications", in_signature='u', out_signature='')
     def CloseNotification(self, id):
+        remove_notification(id)
         pass
 
     @dbus.service.method("org.freedesktop.Notifications", in_signature='', out_signature='ssss')
@@ -152,6 +161,7 @@ if __name__ == '__main__':
         pass
 
     for noti in notification_queue:
+        noti.notid=-1
         if nf._id < noti.mid:
             nf._id = int(noti.mid)
     print("Found last id: {nid}".format(nid=nf._id))

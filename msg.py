@@ -8,6 +8,7 @@ class Urgency(IntEnum):
 class Msg():
     def __init__(self):
         self.mid=0
+        self.notid=-1
         self.message=""
         self.deadline=-1
         self.summary=""
