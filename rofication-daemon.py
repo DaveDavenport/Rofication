@@ -102,7 +102,12 @@ class Rofication(threading.Thread):
                 if noti.mid == int(arg):
                     self.notification_queue.remove(noti)
                     break
-
+    def communication_command_delete_apps(self, connection, arg): 
+        with self.notification_queue_lock:
+            for noti in self.notification_queue:
+                if noti.application == arg:
+                    self.notification_queue.remove(noti)
+                    break
     def communication_command_saw(self, connection, arg):
         with self.notification_queue_lock:
             for noti in self.notification_queue:
@@ -138,6 +143,8 @@ class Rofication(threading.Thread):
                     # Dismiss and item.
                     elif command == "del":
                         self.communication_command_delete(connection,data.split(':')[1])
+                    elif command == "dela":
+                        self.communication_command_delete_apps(connection,data.split(':')[1])
                     # Saw an item, this sets the urgency to normal.
                     elif command == "saw":
                         self.communication_command_saw(connection, data.split(':')[1])

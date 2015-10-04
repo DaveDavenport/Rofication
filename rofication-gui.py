@@ -26,7 +26,8 @@ def linesplit(socket):
                 buffer += more
     if buffer:
         yield buffer
-msg = "<span color='green'><i>Delete</i>:    Dismiss notification.\n<i>Alt+Enter</i>: Mark notification seen.\n<i>Alt+r</i>      Reload</span>";
+
+msg = "<span color='green'><i>Delete</i>:    Dismiss notification.\t<i>Alt+Enter</i>: Mark notification seen.\t<i>Alt+r</i>:      Reload\nDelete application notification:\t<i>Control+Delete</i></span>";
 rofi_command = [ 'rofi' , '-dmenu', '-p', 'Notifications:', '-markup', '-mesg', msg]
 
 def strip_tags(value):
@@ -37,10 +38,14 @@ def call_rofi(entries, additional_args=[]):
     additional_args.extend([ '-kb-custom-1', 'Delete',
                              '-kb-custom-2', 'Alt+Return',
                              '-kb-custom-3', 'Alt+r',
+                             '-kb-custom-4', 'Control+Delete',
                              '-markup-rows',
                              '-sep', '\\0',
                              '-format', 'i',
-                             '-eh', '2' ])
+                             '-columns', '3',
+                             '-lines', '4',
+                             '-eh', '2',
+                             '-location', '2', '-width', '100' ])
     proc = subprocess.Popen(rofi_command+ additional_args,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE)
@@ -105,17 +110,17 @@ while cont:
         args.append(str(did))
     # Show rofi
     did,code = call_rofi(entries,args)
+    print("{a},{b}".format(a=did,b=code))
     # Dismiss notification
     if did != None and code == 10:
-        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        client.connect("/tmp/rofi_notification_daemon")
         send_command("del:{mid}".format(mid=ids[did].mid))
         cont=True
     # Seen notification
     elif did != None and code == 11:
-        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        client.connect("/tmp/rofi_notification_daemon")
         send_command("saw:{mid}".format(mid=ids[did].mid))
         cont=True
     elif did != None and code == 12:
+        cont=True
+    elif did != None and code == 13:
+        send_command("dela:{app}".format(app=ids[did].application))
         cont=True
