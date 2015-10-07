@@ -30,7 +30,7 @@ allowed_expire_app=[ ]
 
 
 class Rofication(threading.Thread):
-    
+
     def __init__(self):
         self.socket_path = "/tmp/rofi_notification_daemon"
         self.notification_queue_lock = threading.Lock()
@@ -43,7 +43,7 @@ class Rofication(threading.Thread):
         try:
             with open('not.json', 'r') as f:
                      self.notification_queue = jsonpickle.decode(f.read())
-        except:    
+        except:
             pass
 
         for noti in self.notification_queue:
@@ -96,18 +96,21 @@ class Rofication(threading.Thread):
                 connection.send(bytes(jsonpickle.encode(noti),'utf-8'))
                 connection.send(b'\n')
                 i+=1
-    def communication_command_delete(self, connection, arg): 
+    def communication_command_delete(self, connection, arg):
         with self.notification_queue_lock:
             for noti in self.notification_queue:
                 if noti.mid == int(arg):
                     self.notification_queue.remove(noti)
                     break
-    def communication_command_delete_apps(self, connection, arg): 
+    def communication_command_delete_apps(self, connection, arg):
+        remove_q = []
         with self.notification_queue_lock:
             for noti in self.notification_queue:
                 if noti.application == arg:
-                    self.notification_queue.remove(noti)
-                    break
+                    remove_q.append(noti);
+            for noti in remove_q:
+                self.notification_queue.remove(noti)
+
     def communication_command_saw(self, connection, arg):
         with self.notification_queue_lock:
             for noti in self.notification_queue:
@@ -174,7 +177,7 @@ class NotificationFetcher(dbus.service.Object):
         self._id += 1
         msg.application  = str(app_name)
         msg.notid        = notification_id
-        msg.mid          = self._id 
+        msg.mid          = self._id
         msg.summary      = str(summary)
         msg.body         = str(body)
         if int(expire_timeout) > 0:
@@ -216,7 +219,7 @@ if __name__ == '__main__':
     nf = NotificationFetcher(session_bus, '/org/freedesktop/Notifications')
 
     nf._rofication = rofication;
-    
+
     rofication.load();
     nf._id = rofication.last_id
 
