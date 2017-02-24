@@ -27,7 +27,8 @@ def linesplit(socket):
     if buffer:
         yield buffer
 
-msg = "<span color='green'><i>Delete</i>:    Dismiss notification.\t<i>Alt+Enter</i>: Mark notification seen.\t<i>Alt+r</i>:      Reload\nDelete application notification:\t<i>Control+Delete</i></span>";
+msg = """<span font-size='small'><i>Alt+s</i>:    Dismiss notification.    <i>Alt+Enter</i>:      Mark notification seen.\n"""
+msg += """<i>Alt+r</i>:    Reload                   <i>Alt+a</i>:          Delete application notification</span>""";
 rofi_command = [ 'rofi' , '-dmenu', '-p', 'Notifications:', '-markup', '-mesg', msg]
 
 def strip_tags(value):
@@ -35,20 +36,18 @@ def strip_tags(value):
   return re.sub(r'<[^>]*?>', '', value)
 
 def call_rofi(entries, additional_args=[]):
-    additional_args.extend([ '-kb-custom-1', 'Delete',
+    additional_args.extend([ '-kb-custom-1', 'Alt+s',
                              '-kb-custom-2', 'Alt+Return',
                              '-kb-custom-3', 'Alt+r',
-                             '-kb-custom-4', 'Control+Delete',
+                             '-kb-custom-4', 'Alt+a',
                              '-markup-rows',
                              '-sep', '\\0',
                              '-format', 'i',
                              '-columns', '3',
                              '-lines', '4',
                              '-eh', '2',
-                             '-location', '2', '-width', '100' ])
-    proc = subprocess.Popen(rofi_command+ additional_args,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE)
+                             '-width', '-70' ])
+    proc = subprocess.Popen(rofi_command+ additional_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     for e in entries:
         proc.stdin.write((e).encode('utf-8'))
         proc.stdin.write(struct.pack('B', 0))
