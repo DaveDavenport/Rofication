@@ -1,0 +1,5 @@
+regolith-rofication (1.0.0-1ubuntu1~ppa2) eoan; urgency=medium
+
+  * Initial release. Packaged from https://github.com/DaveDavenport/Rofication
+
+ -- Ken Gilmer <kgilmer@gmail.com>  Fri, 29 Nov 2019 14:30:42 -0800

@@ -1,0 +1,12 @@
+Source: regolith-rofication
+Section: x11
+Priority: optional
+Maintainer: Ken Gilmer <kgilmer@gmail.com>
+Build-Depends: debhelper (>= 11)
+Standards-Version: 4.1.3
+Homepage: https://github.com/regolith-linux/regolith-rofication
+
+Package: regolith-rofication
+Architecture: any
+Depends: ${misc:Depends}, i3xrocks, python3-jsonpickle
+Description: Rofication notification system
