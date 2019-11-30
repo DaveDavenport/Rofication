@@ -27,26 +27,24 @@ def linesplit(socket):
     if buffer:
         yield buffer
 
-msg = """<span font-size='small'><i>Alt+s</i>:    Dismiss notification.    <i>Alt+Enter</i>:      Mark notification seen.\n"""
-msg += """<i>Alt+r</i>:    Reload                   <i>Alt+a</i>:          Delete application notification</span>""";
-rofi_command = [ 'rofi' , '-dmenu', '-p', 'Notifications:', '-markup', '-mesg', msg]
+rofi_command = [ 'rofi' , '-dmenu', '-p', 'Notifications', '-markup']
 
 def strip_tags(value):
   "Return the given HTML with all tags stripped."
   return re.sub(r'<[^>]*?>', '', value)
 
 def call_rofi(entries, additional_args=[]):
-    additional_args.extend([ '-kb-custom-1', 'Alt+s',
-                             '-kb-custom-2', 'Alt+Return',
+    additional_args.extend([ '-kb-accept-entry', 'Control+j,Control+m,KP_Enter',
+                             '-kb-remove-char-forward', 'Control+d',
+                             '-kb-delete-entry', '',
+                             '-kb-custom-1', 'Delete',
+                             '-kb-custom-2', 'Return',
                              '-kb-custom-3', 'Alt+r',
-                             '-kb-custom-4', 'Alt+a',
+                             '-kb-custom-4', 'Shift+Delete',
                              '-markup-rows',
                              '-sep', '\\0',
                              '-format', 'i',
-                             '-columns', '3',
-                             '-lines', '4',
-                             '-eh', '2',
-                             '-width', '-70' ])
+                             '-sidebar-mode'])
     proc = subprocess.Popen(rofi_command+ additional_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     for e in entries:
         proc.stdin.write((e).encode('utf-8'))
@@ -109,7 +107,7 @@ while cont:
         args.append(str(did))
     # Show rofi
     did,code = call_rofi(entries,args)
-    print("{a},{b}".format(a=did,b=code))
+    # print("{a},{b}".format(a=did,b=code))
     # Dismiss notification
     if did != None and code == 10:
         send_command("del:{mid}".format(mid=ids[did].mid))
