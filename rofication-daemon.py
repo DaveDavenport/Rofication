@@ -209,6 +209,10 @@ class NotificationFetcher(dbus.service.Object):
     Main function
 """
 if __name__ == '__main__':
+    """ Pre-start cleanup """
+    if os.path.exists("/tmp/rofi_notification_daemon"):
+        os.remove("/tmp/rofi_notification_daemon")
+
     """ Create daemon """
     rofication = Rofication();
 
