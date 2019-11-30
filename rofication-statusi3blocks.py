@@ -40,4 +40,4 @@ if (has_error):
     exit(33)
 
 if (os.getenv('button', "")):
-    run(['/usr/bin/python3', '/tmp/Rofication/rofication-gui.py'])
+    run(['/usr/bin/python3', '/usr/share/rofication/rofication-gui.py'])
