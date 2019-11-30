@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+# Enable the gnome-flashback notification subsystem
+gsettings set org.gnome.gnome-flashback notifications true
+
+#DEBHELPER#
+
+exit 0

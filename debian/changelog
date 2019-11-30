@@ -1,3 +1,15 @@
+regolith-rofication (1.0.3-1ubuntu1~ppa2) eoan; urgency=medium
+
+  * Bug fixes to blocklet 
+
+ -- Ken Gilmer <kgilmer@gmail.com>  Fri, 29 Nov 2019 21:47:58 -0800
+
+regolith-rofication (1.0.1-1ubuntu1~ppa1) eoan; urgency=medium
+
+  * Add Icons to blocklet. 
+
+ -- Ken Gilmer <kgilmer@gmail.com>  Fri, 29 Nov 2019 17:27:26 -0800
+
 regolith-rofication (1.0.0-1ubuntu1~ppa2) eoan; urgency=medium
 
   * Initial release. Packaged from https://github.com/DaveDavenport/Rofication
