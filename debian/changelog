@@ -1,3 +1,9 @@
+regolith-rofication (1.0.6-1ubuntu1~ppa1) eoan; urgency=medium
+
+  * Tweak look of failure mode of blocklet.
+
+ -- Ken Gilmer <kgilmer@gmail.com>  Sun, 01 Dec 2019 09:33:43 -0800
+
 regolith-rofication (1.0.5-1ubuntu1~ppa1) eoan; urgency=medium
 
   * Abort program if cannot bind to socket. 

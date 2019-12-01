@@ -15,7 +15,6 @@ valuefont = os.getenv('font', check_output(['/usr/bin/xrescat', 'i3xrocks.value.
 notification_value = 0
 icon = notification_empty
 label_color = default_label_color
-has_error = False
 form = '<span foreground="{}">{}</span><span font_desc="{}" foreground="{}"> {}</span>'
 
 try:
@@ -33,12 +32,10 @@ try:
         default_color = critical_color
 except (FileNotFoundError, ConnectionRefusedError):
     icon = notification_error
-    has_error = True
+    label_color = critical_color
+    notification_value = "?"
 
-print (form.format(default_label_color, icon, valuefont, default_color, notification_value))
-
-if (has_error): 
-    exit(33)
+print (form.format(label_color, icon, valuefont, default_color, notification_value))
 
 if (os.getenv('button', "")):
     Popen(['/usr/bin/python3', '/usr/share/rofication/rofication-gui.py'])
