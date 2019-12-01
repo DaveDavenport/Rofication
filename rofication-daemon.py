@@ -126,9 +126,13 @@ class Rofication(threading.Thread):
 
     def run(self):
         server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        server.bind(self.socket_path)
-        server.listen(1)
-        server.settimeout(1)
+        try:
+            server.bind(self.socket_path)
+            server.listen(1)
+            server.settimeout(1)
+        except e as OSError:
+            printf("Failed to open socket: " + e)
+            exit(1)
         while 1:
             try:
                 connection, client_address = server.accept()

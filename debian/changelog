@@ -1,3 +1,9 @@
+regolith-rofication (1.0.5-1ubuntu1~ppa1) eoan; urgency=medium
+
+  * Abort program if cannot bind to socket. 
+
+ -- Ken Gilmer <kgilmer@gmail.com>  Sun, 01 Dec 2019 09:06:58 -0800
+
 regolith-rofication (1.0.4-1ubuntu1~ppa1) eoan; urgency=medium
 
   * Bug fixes and enhancements to blocklet.
