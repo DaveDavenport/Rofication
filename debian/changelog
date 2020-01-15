@@ -1,3 +1,9 @@
+regolith-rofication (1.0.6-1ubuntu1~ppa2) eoan; urgency=medium
+
+  * Migrate to new PPA. 
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Wed, 15 Jan 2020 07:56:02 -0800
+
 regolith-rofication (1.0.6-1ubuntu1~ppa1) eoan; urgency=medium
 
   * Tweak look of failure mode of blocklet.
