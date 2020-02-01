@@ -1,3 +1,10 @@
+regolith-rofication (1.0.8-1ubuntu1~ppa1) eoan; urgency=medium
+
+  * Package fix: Fix notification row layout to display content of
+    notification from @lawzava. 
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Sat, 01 Feb 2020 12:27:16 -0800
+
 regolith-rofication (1.0.7-1ubuntu1~ppa1) eoan; urgency=medium
 
   * Add dependency on gnome-flashback due to postinst script. 
