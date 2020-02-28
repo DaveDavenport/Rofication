@@ -1,3 +1,9 @@
+regolith-rofication (1.0.9-1ubuntu1~ppa1) eoan; urgency=medium
+
+  * Minor tweaks to layout. 
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Thu, 27 Feb 2020 21:54:04 -0800
+
 regolith-rofication (1.0.8-1ubuntu1~ppa1) eoan; urgency=medium
 
   * Package fix: Fix notification row layout to display content of

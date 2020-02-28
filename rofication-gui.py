@@ -45,8 +45,7 @@ def call_rofi(entries, additional_args=[]):
                              '-sep', '\\0',
                              '-format', 'i',
                              '-eh', '2',
-                             '-lines', '10',
-                             '-sidebar-mode'])
+                             '-lines', '10'])
     proc = subprocess.Popen(rofi_command+ additional_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     for e in entries:
         proc.stdin.write((e).encode('utf-8'))
@@ -86,7 +85,7 @@ while cont:
         if len(a) > 0:
             msg = jsonpickle.decode(a)
             ids.append(msg)
-            mst = ("<b>{summ}</b> <small>({app})</small>\n<i>{body}</i>".format(
+            mst = ("<b>{summ}</b> <small>({app})</small>\n<small>{body}</small>".format(
                    summ=GLib.markup_escape_text(strip_tags(msg.summary)),
                    app=GLib.markup_escape_text(strip_tags(msg.application)),
                    body=GLib.markup_escape_text(strip_tags(msg.body.replace("\n"," ")))))
