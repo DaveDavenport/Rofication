@@ -9,6 +9,7 @@ notification_some = os.getenv('i3xrocks_label_notify_some', check_output(['/usr/
 notification_error = os.getenv('i3xrocks_label_notify_error', check_output(['/usr/bin/xrescat', 'i3xrocks.label.notify.error', 'N'], universal_newlines=True))
 default_color = os.getenv('color', check_output(['/usr/bin/xrescat', 'i3xrocks.value.color', '#D8DEE9'], universal_newlines=True))
 default_label_color = os.getenv('label_color', check_output(['/usr/bin/xrescat', 'i3xrocks.label.color', '#7B8394'], universal_newlines=True))
+default_background_color = os.getenv('background_color', check_output(['/usr/bin/xrescat', 'i3xrocks.nominal', '#D8DEE9'], universal_newlines=True))
 critical_color = check_output(['/usr/bin/xrescat', 'i3xrocks.critical.color', '#BF616A'], universal_newlines=True)
 valuefont = os.getenv('font', check_output(['/usr/bin/xrescat', 'i3xrocks.value.font', 'Source Code Pro Medium 13'], universal_newlines=True))
 
@@ -28,6 +29,9 @@ try:
     notification_value = int(l[0])
     if (notification_value > 0):
         icon = notification_some
+        label_color = default_label_color
+    else:
+        label_color = default_background_color
     if int(l[1]) > 0:
         default_color = critical_color
 except (FileNotFoundError, ConnectionRefusedError):
