@@ -7,6 +7,11 @@ Standards-Version: 4.1.3
 Homepage: https://github.com/regolith-linux/regolith-rofication
 
 Package: regolith-rofication
+Provides: notification-daemon
+Conflicts: dunst
 Architecture: any
-Depends: ${misc:Depends}, i3xrocks, python3-jsonpickle, gnome-flashback
+Depends: ${misc:Depends},
+  gnome-flashback,
+  i3xrocks,
+  python3-jsonpickle
 Description: Rofication notification system

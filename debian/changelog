@@ -1,3 +1,10 @@
+regolith-rofication (1.0.10) eoan; urgency=medium
+
+  * Add virtual package and conflics with dunst. 
+  * Take @Josh-Letts color tweak to blocklet.
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Sun, 22 Mar 2020 16:04:25 -0700
+
 regolith-rofication (1.0.9-1ubuntu1~ppa1) eoan; urgency=medium
 
   * Minor tweaks to layout. 
