@@ -1,3 +1,10 @@
+regolith-rofication (1.1.0) eoan; urgency=medium
+
+  * Ship i3xrocks blocklet.
+  * Add package metadata for other notifications systems. 
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Sun, 29 Mar 2020 11:35:06 -0700
+
 regolith-rofication (1.0.10) eoan; urgency=medium
 
   * Add virtual package and conflics with dunst. 

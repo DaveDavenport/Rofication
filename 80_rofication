@@ -1,0 +1,6 @@
+# Rofication
+#
+# Displays notifications.
+[rofication]
+command=/usr/share/i3xrocks/rofication-statusi3blocks.py
+interval=10
