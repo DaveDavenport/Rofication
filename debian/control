@@ -7,7 +7,6 @@ Standards-Version: 4.1.3
 Homepage: https://github.com/regolith-linux/regolith-rofication
 
 Package: regolith-rofication
-Provides: notification-daemon
 Architecture: any
 Depends: ${misc:Depends}, 
     i3xrocks, 
