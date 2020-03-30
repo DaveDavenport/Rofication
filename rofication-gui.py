@@ -90,9 +90,9 @@ while cont:
                    app=GLib.markup_escape_text(strip_tags(notification.application)),
                    body=GLib.markup_escape_text(strip_tags(notification.body.replace("\n", " ")))))
             entries.append(mst)
-            if Urgency(notification.urgency) is Urgency.critical:
+            if Urgency(notification.urgency) is Urgency.CRITICAL:
                 urgent.append(str(index))
-            if Urgency(notification.urgency) is Urgency.low:
+            if Urgency(notification.urgency) is Urgency.LOW:
                 low.append(str(index))
             index+=1
     if len(urgent):

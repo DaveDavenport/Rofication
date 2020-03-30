@@ -16,7 +16,6 @@ class NotificationObserver:
 
 
 class NotificationHandler(service.Object):
-
     def __init__(self, conn, object_path, queue):
         super().__init__(conn, object_path)
         self.nq = queue
@@ -29,9 +28,9 @@ class NotificationHandler(service.Object):
                summary, body, actions, hints, expire_timeout):
         notification = Notification()
         notification.id = replaces_id
-        notification.application = str(app_name)
-        notification.summary = str(summary)
-        notification.body = str(body)
+        notification.application = app_name
+        notification.summary = summary
+        notification.body = body
         notification.actions = tuple(actions)
         if int(expire_timeout) > 0:
             notification.deadline = time.time() + int(expire_timeout) / 1000.0
@@ -44,18 +43,18 @@ class NotificationHandler(service.Object):
     def ActionInvoked(self, id_in, action_key_in):
         pass
 
+    @service.signal('org.freedesktop.Notifications', signature='uu')
+    def NotificationClosed(self, id_in, reason_in):
+        pass
+
     @service.method("org.freedesktop.Notifications", in_signature='', out_signature='as')
     def GetCapabilities(self):
-        return ("actions", "body")
+        return "actions", "body"
 
     @service.method("org.freedesktop.Notifications", in_signature='u', out_signature='')
     def CloseNotification(self, id):
         self.nq.remove(id)
 
-    @service.signal('org.freedesktop.Notifications', signature='uu')
-    def NotificationClosed(self, id_in, reason_in):
-        pass
-
     @service.method("org.freedesktop.Notifications", in_signature='', out_signature='ssss')
     def GetServerInformation(self):
-        return ("rofication", "http://gmpclient.org/", "0.0.1", "1")
+        return "rofication", "http://gmpclient.org/", "0.0.1", "1"

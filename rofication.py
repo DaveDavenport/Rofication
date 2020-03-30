@@ -43,7 +43,7 @@ class Rofication(threading.Thread):
         with self.nq.lock:
             urgent = 0
             for n in self.nq.queue:
-                if n.urgency == Urgency.critical:
+                if n.urgency == Urgency.CRITICAL:
                     n += 1
             cmd = "{:d}\n{:d}".format(len(self.nq.queue), urgent)
             connection.send(bytes(cmd, 'utf-8'))

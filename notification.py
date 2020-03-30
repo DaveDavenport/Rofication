@@ -8,9 +8,9 @@ import jsonpickle
 
 
 class Urgency(IntEnum):
-    low = 0
-    normal = 1
-    critical = 2
+    LOW = 0
+    NORMAL = 1
+    CRITICAL = 2
 
 
 class Notification:
@@ -20,7 +20,7 @@ class Notification:
         self.summary = None
         self.body = None
         self.application = None
-        self.urgency = int(Urgency.normal)
+        self.urgency = int(Urgency.NORMAL)
         self.actions = []
 
     def __str__(self):
@@ -49,7 +49,7 @@ class NotificationQueue:
         with self.lock:
             for notification in self.queue:
                 if notification.id == nid:
-                    notification.urgency = int(Urgency.normal)
+                    notification.urgency = int(Urgency.NORMAL)
                     for observer in self.observers:
                         observer.activate(notification)
                     break
