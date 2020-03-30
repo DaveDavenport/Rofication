@@ -6,17 +6,21 @@ from dbus import service
 from notification import Notification
 
 
+class NotificationObserver:
+    def __init__(self, handler):
+        self.handler = handler
+
+    def activate(self, notification):
+        if "default" in notification.actions:
+            self.handler.ActionInvoked(notification.id, "default")
+
+
 class NotificationHandler(service.Object):
 
     def __init__(self, conn, object_path, queue):
         super().__init__(conn, object_path)
         self.nq = queue
-
-    def create_activate_callback(self, actions):
-        if "default" in actions:
-            return lambda nid: self.ActionInvoked(nid, "default")
-        else:
-            return lambda nid: None
+        self.nq.observers.append(NotificationObserver(self))
 
     @service.method("org.freedesktop.Notifications",
                     in_signature='susssasa{ss}i',
@@ -28,7 +32,7 @@ class NotificationHandler(service.Object):
         notification.application = str(app_name)
         notification.summary = str(summary)
         notification.body = str(body)
-        notification.activate_callback = self.create_activate_callback(actions)
+        notification.actions = tuple(actions)
         if int(expire_timeout) > 0:
             notification.deadline = time.time() + int(expire_timeout) / 1000.0
         if 'urgency' in hints:

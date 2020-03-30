@@ -21,13 +21,10 @@ class Notification:
         self.body = None
         self.application = None
         self.urgency = int(Urgency.normal)
-        self.activate_callback = lambda nid: None
+        self.actions = []
 
     def __str__(self):
         return jsonpickle.encode(self)
-
-    def activate(self):
-        self.activate_callback(self.id)
 
 
 # TODO: make it iterable
@@ -38,6 +35,7 @@ class NotificationQueue:
         self.last_id = last_id
         self.allowed_to_expire = []
         self.single_notification_apps = ["VLC media player"]
+        self.observers = []
 
     def save(self, filename):
         print("Saving notification queue")
@@ -52,7 +50,8 @@ class NotificationQueue:
             for notification in self.queue:
                 if notification.id == nid:
                     notification.urgency = int(Urgency.normal)
-                    notification.activate()
+                    for observer in self.observers:
+                        observer.activate(notification)
                     break
         warn("Unable to find notification {:d}", nid)
 
