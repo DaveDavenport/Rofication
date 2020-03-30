@@ -7,7 +7,7 @@ import subprocess
 import jsonpickle
 from gi.repository import GLib
 from enum import Enum
-from msg import Msg,Urgency
+from notification import Urgency
 
 def linesplit(socket):
     buffer = socket.recv(16)
@@ -83,16 +83,16 @@ while cont:
     args=[]
     for a in linesplit(client):
         if len(a) > 0:
-            msg = jsonpickle.decode(a)
-            ids.append(msg)
+            notification = jsonpickle.decode(a)
+            ids.append(notification)
             mst = ("<b>{summ}</b> <small>({app})</small>\n<small>{body}</small>".format(
-                   summ=GLib.markup_escape_text(strip_tags(msg.summary)),
-                   app=GLib.markup_escape_text(strip_tags(msg.application)),
-                   body=GLib.markup_escape_text(strip_tags(msg.body.replace("\n"," ")))))
+                   summ=GLib.markup_escape_text(strip_tags(notification.summary)),
+                   app=GLib.markup_escape_text(strip_tags(notification.application)),
+                   body=GLib.markup_escape_text(strip_tags(notification.body.replace("\n", " ")))))
             entries.append(mst)
-            if Urgency(msg.urgency) is Urgency.critical:
+            if Urgency(notification.urgency) is Urgency.critical:
                 urgent.append(str(index))
-            if Urgency(msg.urgency) is Urgency.low:
+            if Urgency(notification.urgency) is Urgency.low:
                 low.append(str(index))
             index+=1
     if len(urgent):
@@ -107,18 +107,21 @@ while cont:
         args.append("-selected-row")
         args.append(str(did))
     # Show rofi
-    did,code = call_rofi(entries,args)
+    did, code = call_rofi(entries, args)
     # print("{a},{b}".format(a=did,b=code))
+    if did is None or did < 0:
+        break
     # Dismiss notification
-    if did != None and code == 10:
-        send_command("del:{mid}".format(mid=ids[did].mid))
+    if code == 10:
+        send_command("del:{mid}".format(mid=ids[did].id))
         cont=True
     # Seen notification
-    elif did != None and code == 11:
-        send_command("saw:{mid}".format(mid=ids[did].mid))
+    elif code == 11:
+        send_command("saw:{mid}".format(mid=ids[did].id))
         cont=True
-    elif did != None and code == 12:
+    elif code == 12:
         cont=True
-    elif did != None and code == 13:
+    # Dismiss all notifications for application
+    elif code == 13:
         send_command("dela:{app}".format(app=ids[did].application))
         cont=True
