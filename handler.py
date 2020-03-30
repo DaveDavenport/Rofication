@@ -14,6 +14,9 @@ class NotificationObserver:
         if "default" in notification.actions:
             self.handler.ActionInvoked(notification.id, "default")
 
+    def close(self, nid, reason):
+        self.handler.NotificationClosed(nid, reason)
+
 
 class NotificationHandler(service.Object):
     def __init__(self, conn, object_path, queue):

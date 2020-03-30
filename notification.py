@@ -13,6 +13,13 @@ class Urgency(IntEnum):
     CRITICAL = 2
 
 
+class CloseReason(IntEnum):
+    EXPIRED = 1
+    DISMISSED = 2
+    CLOSED = 3
+    RESERVED = 4
+
+
 class Notification:
     def __init__(self):
         self.id = None
@@ -93,11 +100,14 @@ class NotificationQueue:
         with self.lock:
             now = time.time()
             to_remove = [n.id for n in self.queue
-                         if n.deadline and n.deadline > now
+                         if n.deadline and n.deadline < now
                          and n.application in self.allowed_to_expire]
             if to_remove:
                 print("Expired: {}".format(to_remove))
-                self.queue.remove_all(to_remove)
+                self.remove_all(to_remove)
+                for observer in self.observers:
+                    for nid in to_remove:
+                        observer.close(nid, CloseReason.EXPIRED)
 
     @classmethod
     def load(cls, filename):
