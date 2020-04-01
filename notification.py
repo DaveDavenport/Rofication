@@ -2,7 +2,9 @@ import json
 import os
 import threading
 import time
+from abc import ABC, abstractmethod
 from enum import IntEnum
+from typing import Sequence, Optional, Iterable, MutableSequence
 from warnings import warn
 
 import jsonpickle
@@ -22,33 +24,44 @@ class CloseReason(IntEnum):
 
 
 class Notification:
-    def __init__(self):
-        self.id = None
-        self.deadline = None
-        self.summary = None
-        self.body = None
-        self.application = None
-        self.urgency = int(Urgency.NORMAL)
-        self.actions = []
+    def __init__(self) -> None:
+        self.id: Optional[int] = None
+        self.deadline: Optional[float] = None
+        self.summary: Optional[str] = None
+        self.body: Optional[str] = None
+        self.application: Optional[str] = None
+        self.urgency: int = int(Urgency.NORMAL)
+        self.actions: Sequence[str] = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         return json.dumps(vars(self))
+
+
+class NotificationObserver(ABC):
+    @abstractmethod
+    def activate(self, notification: Notification) -> None:
+        pass
+
+    @abstractmethod
+    def close(self, nid: int, reason: int) -> None:
+        pass
+
 
 # TODO: make it iterable
 class NotificationQueue:
-    def __init__(self, queue=None, last_id=1):
-        self._lock = threading.Lock()
-        self.queue = [] if queue is None else queue
-        self.last_id = last_id
-        self.allowed_to_expire = []
-        self.single_notification_apps = ["VLC media player"]
-        self.observers = []
+    def __init__(self, queue: MutableSequence[Notification] = None, last_id: int = 1) -> None:
+        self._lock: threading.Lock = threading.Lock()
+        self.queue: MutableSequence[Notification] = [] if queue is None else queue
+        self.last_id: int = last_id
+        self.allowed_to_expire: Sequence[str] = []
+        self.single_notification_apps: Sequence[str] = ["VLC media player"]
+        self.observers: MutableSequence[NotificationObserver] = []
 
     @property
-    def lock(self):
+    def lock(self) -> threading.Lock:
         return self._lock
 
-    def save(self, filename):
+    def save(self, filename: str) -> None:
         print("Saving notification queue")
         try:
             with open(filename, 'w') as f:
@@ -56,7 +69,7 @@ class NotificationQueue:
         except:
             warn("Failed to store notification queue")
 
-    def see(self, nid):
+    def see(self, nid: int) -> None:
         for notification in self.queue:
             if notification.id == nid:
                 notification.urgency = int(Urgency.NORMAL)
@@ -65,7 +78,7 @@ class NotificationQueue:
                 break
         warn("Unable to find notification {:d}", nid)
 
-    def remove(self, nid):
+    def remove(self, nid: int) -> None:
         for notification in self.queue:
             if notification.id == nid:
                 print("Removing: {:d}".format(nid))
@@ -73,13 +86,13 @@ class NotificationQueue:
                 break
         warn("Unable to find notification {:d}", nid)
 
-    def remove_all(self, nids):
+    def remove_all(self, nids: Iterable[int]) -> None:
         to_remove = [n for n in self.queue if n.id in nids]
         for notification in to_remove:
             print("Removing: {:d}".format(notification.id))
             self.queue.remove(notification)
 
-    def put(self, notification):
+    def put(self, notification: Notification) -> None:
         if notification.application in self.single_notification_apps:
             to_replace = next((n for n in self.queue
                                if n.application == notification.application), None)
@@ -96,7 +109,7 @@ class NotificationQueue:
         print("Adding: {:d}".format(notification.id))
         self.queue.append(notification)
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         now = time.time()
         to_remove = [n.id for n in self.queue
                      if n.deadline and n.deadline < now
@@ -109,7 +122,7 @@ class NotificationQueue:
                     observer.close(nid, CloseReason.EXPIRED)
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, filename: str) -> 'NotificationQueue':
         if not os.path.exists(filename):
             print("Creating empty notification queue")
             return cls([], 1)

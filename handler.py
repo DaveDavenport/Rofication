@@ -1,34 +1,20 @@
-#!/usr/bin/env python3
 import time
+from typing import Tuple, Sequence, Mapping
 
-from dbus import service
+from dbus import service, connection
 
-from notification import Notification
-
-
-class NotificationObserver:
-    def __init__(self, handler):
-        self.handler = handler
-
-    def activate(self, notification):
-        if "default" in notification.actions:
-            self.handler.ActionInvoked(notification.id, "default")
-
-    def close(self, nid, reason):
-        self.handler.NotificationClosed(nid, reason)
+from notification import Notification, NotificationQueue, NotificationObserver
 
 
 class NotificationHandler(service.Object):
-    def __init__(self, conn, object_path, queue):
+    def __init__(self, conn: connection.Connection, object_path: str, queue: NotificationQueue) -> None:
         super().__init__(conn, object_path)
-        self.nq = queue
-        self.nq.observers.append(NotificationObserver(self))
+        self.nq: NotificationQueue = queue
+        self.nq.observers.append(NotificationHandlerObserver(self))
 
-    @service.method("org.freedesktop.Notifications",
-                    in_signature='susssasa{ss}i',
-                    out_signature='u')
-    def Notify(self, app_name, replaces_id, app_icon,
-               summary, body, actions, hints, expire_timeout):
+    @service.method("org.freedesktop.Notifications", in_signature='susssasa{ss}i', out_signature='u')
+    def Notify(self, app_name: str, replaces_id: int, app_icon: str, summary: str,
+               body: str, actions: Sequence[str], hints: Mapping[str, any], expire_timeout: int) -> int:
         notification = Notification()
         notification.id = replaces_id
         notification.application = app_name
@@ -52,14 +38,26 @@ class NotificationHandler(service.Object):
         pass
 
     @service.method("org.freedesktop.Notifications", in_signature='', out_signature='as')
-    def GetCapabilities(self):
+    def GetCapabilities(self) -> Sequence[str]:
         return "actions", "body"
 
     @service.method("org.freedesktop.Notifications", in_signature='u', out_signature='')
-    def CloseNotification(self, id):
+    def CloseNotification(self, id: int) -> None:
         with self.nq.lock:
             self.nq.remove(id)
 
     @service.method("org.freedesktop.Notifications", in_signature='', out_signature='ssss')
-    def GetServerInformation(self):
+    def GetServerInformation(self) -> Tuple[str, str, str, str]:
         return "rofication", "http://gmpclient.org/", "0.0.1", "1"
+
+
+class NotificationHandlerObserver(NotificationObserver):
+    def __init__(self, handler: NotificationHandler) -> None:
+        self.handler: NotificationHandler = handler
+
+    def activate(self, notification: Notification) -> None:
+        if "default" in notification.actions:
+            self.handler.ActionInvoked(notification.id, "default")
+
+    def close(self, nid: int, reason: int):
+        self.handler.NotificationClosed(nid, reason)

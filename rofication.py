@@ -4,42 +4,41 @@ import threading
 
 import jsonpickle
 
-from notification import Urgency
+from notification import Urgency, NotificationQueue
 
 
 class Rofication(threading.Thread):
-
-    def __init__(self, queue):
+    def __init__(self, queue: NotificationQueue) -> None:
         super().__init__()
-        self.socket_path = "/tmp/rofi_notification_daemon"
-        self.nq = queue
-        self.event = threading.Event()
+        self.socket_path: str = "/tmp/rofi_notification_daemon"
+        self.nq: NotificationQueue = queue
+        self.event: threading.Event = threading.Event()
 
     """
         Communication command.
     """
 
-    def communication_command_send_list(self, connection):
+    def communication_command_send_list(self, connection: socket) -> None:
         with self.nq.lock:
             for notification in self.nq.queue:
                 connection.send(bytes(jsonpickle.encode(notification), 'utf-8'))
                 connection.send(b'\n')
 
-    def communication_command_delete(self, nid):
+    def communication_command_delete(self, nid: int) -> None:
         with self.nq.lock:
             self.nq.remove(nid)
 
-    def communication_command_delete_apps(self, application):
+    def communication_command_delete_apps(self, application: str) -> None:
         with self.nq.lock:
             to_remove = [n.id for n in self.nq.queue
                          if n.application == application]
             self.nq.remove_all(to_remove)
 
-    def communication_command_saw(self, nid):
+    def communication_command_saw(self, nid: int) -> None:
         with self.nq.lock:
             self.nq.see(nid)
 
-    def communication_command_num(self, connection):
+    def communication_command_num(self, connection: socket) -> None:
         with self.nq.lock:
             urgent = 0
             for n in self.nq.queue:
@@ -48,7 +47,7 @@ class Rofication(threading.Thread):
             cmd = "{:d}\n{:d}".format(len(self.nq.queue), urgent)
             connection.send(bytes(cmd, 'utf-8'))
 
-    def run(self):
+    def run(self) -> None:
         server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             server.bind(self.socket_path)
