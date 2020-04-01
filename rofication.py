@@ -60,7 +60,8 @@ class Rofication(threading.Thread):
         while True:
             try:
                 connection, client_address = server.accept()
-                self.nq.cleanup()
+                with self.nq.lock:
+                    self.nq.cleanup()
                 try:
                     data = connection.recv(1024).decode('utf-8')
                     command = data.split(':')[0]
