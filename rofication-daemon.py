@@ -3,7 +3,7 @@ import os
 
 import dbus
 from dbus.mainloop import glib
-from gi.repository import GObject
+from gi.repository import GLib
 
 import handler
 import notification
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # GMainLoop also takes care for catching signals.
     ##
     try:
-        GObject.MainLoop().run()
+        GLib.MainLoop().run()
     except:
         # Set event telling it to quit.
         rofication.event.set()
