@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 import time
@@ -31,8 +32,7 @@ class Notification:
         self.actions = []
 
     def __str__(self):
-        return jsonpickle.encode(self)
-
+        return json.dumps(vars(self))
 
 # TODO: make it iterable
 class NotificationQueue:
