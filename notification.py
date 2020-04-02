@@ -75,16 +75,16 @@ class NotificationQueue:
                 notification.urgency = int(Urgency.NORMAL)
                 for observer in self.observers:
                     observer.activate(notification)
-                break
-        warn("Unable to find notification {:d}", nid)
+                return
+        warn("Unable to find notification {:d}".format(nid))
 
     def remove(self, nid: int) -> None:
         for notification in self.queue:
             if notification.id == nid:
                 print("Removing: {:d}".format(nid))
                 self.queue.remove(notification)
-                break
-        warn("Unable to find notification {:d}", nid)
+                return
+        warn("Unable to find notification {:d}".format(nid))
 
     def remove_all(self, nids: Iterable[int]) -> None:
         to_remove = [n for n in self.queue if n.id in nids]
