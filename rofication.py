@@ -10,7 +10,7 @@ from notification import NotificationQueue, Urgency
 class NotificationHandler(BaseRequestHandler):
     def communication_command_send_list(self) -> None:
         with self.server.not_queue.lock:
-            for notification in self.server.not_queue.queue:
+            for notification in self.server.not_queue:
                 self.request.send(bytes(jsonpickle.encode(notification), 'utf-8'))
                 self.request.send(b'\n')
 
@@ -20,7 +20,7 @@ class NotificationHandler(BaseRequestHandler):
 
     def communication_command_delete_apps(self, application: str) -> None:
         with self.server.not_queue.lock:
-            to_remove = [n.id for n in self.server.not_queue.queue
+            to_remove = [n.id for n in self.server.not_queue
                          if n.application == application]
             self.server.not_queue.remove_all(to_remove)
 
@@ -31,10 +31,10 @@ class NotificationHandler(BaseRequestHandler):
     def communication_command_num(self) -> None:
         with self.server.not_queue.lock:
             urgent = 0
-            for n in self.server.not_queue.queue:
+            for n in self.server.not_queue:
                 if n.urgency == Urgency.CRITICAL:
                     urgent += 1
-            cmd = "{:d}\n{:d}".format(len(self.server.not_queue.queue), urgent)
+            cmd = "{:d}\n{:d}".format(len(self.server.not_queue), urgent)
             self.request.send(bytes(cmd, 'utf-8'))
 
     def handle(self) -> None:

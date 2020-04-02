@@ -4,7 +4,7 @@ import threading
 import time
 from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import Sequence, Optional, Iterable, MutableSequence
+from typing import Sequence, Optional, Iterable, MutableSequence, Iterator
 from warnings import warn
 
 import jsonpickle
@@ -47,15 +47,20 @@ class NotificationObserver(ABC):
         pass
 
 
-# TODO: make it iterable and "len"able
 class NotificationQueue:
     def __init__(self, queue: MutableSequence[Notification] = None, last_id: int = 1) -> None:
         self._lock: threading.Lock = threading.Lock()
-        self.queue: MutableSequence[Notification] = [] if queue is None else queue
+        self._queue: MutableSequence[Notification] = [] if queue is None else queue
         self.last_id: int = last_id
         self.allowed_to_expire: Sequence[str] = []
         self.single_notification_apps: Sequence[str] = ["VLC media player"]
         self.observers: MutableSequence[NotificationObserver] = []
+
+    def __len__(self) -> int:
+        return len(self._queue)
+
+    def __iter__(self) -> Iterator[Notification]:
+        return iter(self._queue)
 
     @property
     def lock(self) -> threading.Lock:
@@ -65,12 +70,12 @@ class NotificationQueue:
         print("Saving notification queue")
         try:
             with open(filename, 'w') as f:
-                f.write(jsonpickle.encode(self.queue))
+                f.write(jsonpickle.encode(self._queue))
         except:
             warn("Failed to store notification queue")
 
     def see(self, nid: int) -> None:
-        for notification in self.queue:
+        for notification in self._queue:
             if notification.id == nid:
                 notification.urgency = Urgency.NORMAL
                 for observer in self.observers:
@@ -79,39 +84,39 @@ class NotificationQueue:
         warn("Unable to find notification {:d}".format(nid))
 
     def remove(self, nid: int) -> None:
-        for notification in self.queue:
+        for notification in self._queue:
             if notification.id == nid:
                 print("Removing: {:d}".format(nid))
-                self.queue.remove(notification)
+                self._queue.remove(notification)
                 return
         warn("Unable to find notification {:d}".format(nid))
 
     def remove_all(self, nids: Iterable[int]) -> None:
-        to_remove = [n for n in self.queue if n.id in nids]
+        to_remove = [n for n in self._queue if n.id in nids]
         for notification in to_remove:
             print("Removing: {:d}".format(notification.id))
-            self.queue.remove(notification)
+            self._queue.remove(notification)
 
     def put(self, notification: Notification) -> None:
         if notification.application in self.single_notification_apps:
-            to_replace = next((n for n in self.queue
+            to_replace = next((n for n in self._queue
                                if n.application == notification.application), None)
         else:
             # cannot have two notifications with the same ID
-            to_replace = next((n for n in self.queue if n.id == notification.id), None)
+            to_replace = next((n for n in self._queue if n.id == notification.id), None)
         if to_replace:
             print("Replacing {:d}", to_replace.id)
-            self.queue.remove(to_replace)
+            self._queue.remove(to_replace)
         else:
             # new notification, increase progressive ID
             notification.id = self.last_id
             self.last_id += 1
         print("Adding: {:d}".format(notification.id))
-        self.queue.append(notification)
+        self._queue.append(notification)
 
     def cleanup(self) -> None:
         now = time.time()
-        to_remove = [n.id for n in self.queue
+        to_remove = [n.id for n in self._queue
                      if n.deadline and n.deadline < now
                      and n.application in self.allowed_to_expire]
         if to_remove:
