@@ -30,7 +30,7 @@ class Notification:
         self.summary: Optional[str] = None
         self.body: Optional[str] = None
         self.application: Optional[str] = None
-        self.urgency: int = int(Urgency.NORMAL)
+        self.urgency: Urgency = Urgency.NORMAL
         self.actions: Sequence[str] = []
 
     def __str__(self) -> str:
@@ -43,11 +43,11 @@ class NotificationObserver(ABC):
         pass
 
     @abstractmethod
-    def close(self, nid: int, reason: int) -> None:
+    def close(self, nid: int, reason: CloseReason) -> None:
         pass
 
 
-# TODO: make it iterable
+# TODO: make it iterable and "len"able
 class NotificationQueue:
     def __init__(self, queue: MutableSequence[Notification] = None, last_id: int = 1) -> None:
         self._lock: threading.Lock = threading.Lock()
@@ -72,7 +72,7 @@ class NotificationQueue:
     def see(self, nid: int) -> None:
         for notification in self.queue:
             if notification.id == nid:
-                notification.urgency = int(Urgency.NORMAL)
+                notification.urgency = Urgency.NORMAL
                 for observer in self.observers:
                     observer.activate(notification)
                 return

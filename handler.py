@@ -3,7 +3,7 @@ from typing import Tuple, Sequence, Mapping
 
 from dbus import service, connection
 
-from notification import Notification, NotificationQueue, NotificationObserver
+from notification import Notification, NotificationQueue, NotificationObserver, CloseReason
 
 
 class NotificationHandler(service.Object):
@@ -59,5 +59,5 @@ class NotificationHandlerObserver(NotificationObserver):
         if "default" in notification.actions:
             self.handler.ActionInvoked(notification.id, "default")
 
-    def close(self, nid: int, reason: int):
+    def close(self, nid: int, reason: CloseReason):
         self.handler.NotificationClosed(nid, reason)
