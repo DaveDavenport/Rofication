@@ -33,7 +33,7 @@ class NotificationHandler(BaseRequestHandler):
             urgent = 0
             for n in self.server.not_queue.queue:
                 if n.urgency == Urgency.CRITICAL:
-                    n += 1
+                    urgent += 1
             cmd = "{:d}\n{:d}".format(len(self.server.not_queue.queue), urgent)
             self.request.send(bytes(cmd, 'utf-8'))
 
