@@ -2,8 +2,9 @@
 
 import os
 import socket
+import sys
 from dataclasses import dataclass
-from subprocess import check_output, Popen
+from subprocess import check_output
 from typing import Optional
 
 
@@ -28,7 +29,10 @@ class Resource:
 
 def main() -> None:
     if os.getenv('button'):
-        Popen(('/usr/bin/python3', '/usr/share/rofication/rofication-gui.py'))
+        import roficationgui
+        sys.stdout = None
+        roficationgui.main()
+        sys.stdout = sys.__stdout__
 
     value_font = Resource('Source Code Pro Medium 13', 'i3xrocks.value.font', 'font')
 
