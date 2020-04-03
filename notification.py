@@ -145,9 +145,9 @@ class NotificationQueue:
             warn("Failed to load notification queue")
             queue = []
 
-        last_id = 1
+        last_id = 0
         for notification in queue:
             if last_id < notification.id:
                 last_id = int(notification.id)
         print("Found last id: {:d}".format(last_id))
-        return cls(queue, last_id)
+        return cls(queue, last_id + 1)
