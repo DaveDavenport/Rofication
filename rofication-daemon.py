@@ -8,10 +8,8 @@ import handler
 import notification
 from rofication import NotificationServer
 
-"""
-    Main function
-"""
-if __name__ == '__main__':
+
+def main() -> None:
     """ Create notification queue """
     not_queue = notification.NotificationQueue.load("not.json")
 
@@ -33,3 +31,7 @@ if __name__ == '__main__':
             server.shutdown()
 
     not_queue.save("not.json")
+
+
+if __name__ == '__main__':
+    main()

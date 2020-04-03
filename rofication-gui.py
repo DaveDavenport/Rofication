@@ -1,128 +1,128 @@
 #!/usr/bin/env python3
+
 import json
 import re
 import socket
 import struct
 import subprocess
+from typing import Iterable, List
 
 from gi.repository import GLib
 
 from notification import Urgency, Notification
 
+UNIX_SOCKET = '/tmp/rofi_notification_daemon'
 
-def linesplit(socket):
-    buffer = socket.recv(16)
-    buffer = buffer.decode("UTF-8")
-    buffering = True
-    while buffering:
-        if '\n' in buffer:
-            (line, buffer) = buffer.split("\n", 1)
-            yield line
-        else:
-            more = socket.recv(16)
-            more = more.decode("UTF-8")
-            if not more:
-                buffering = False
-            else:
-                buffer += more
-    if buffer:
-        yield buffer
+HTML_TAGS_PATTERN = re.compile(r'<[^>]*?>')
 
-rofi_command = [ 'rofi' , '-dmenu', '-p', 'Notifications', '-markup']
+ROFI_COMMAND = ('rofi',
+                '-dmenu',
+                '-p', 'Notifications',
+                '-markup',
+                '-kb-accept-entry', 'Control+j,Control+m,KP_Enter',
+                '-kb-remove-char-forward', 'Control+d',
+                '-kb-delete-entry', '',
+                '-kb-custom-1', 'Delete',
+                '-kb-custom-2', 'Return',
+                '-kb-custom-3', 'Alt+r',
+                '-kb-custom-4', 'Shift+Delete',
+                '-markup-rows',
+                '-sep', '\\0',
+                '-format', 'i',
+                '-eh', '2',
+                '-lines', '10')
 
-def strip_tags(value):
-  "Return the given HTML with all tags stripped."
-  return re.sub(r'<[^>]*?>', '', value)
 
-def call_rofi(entries, additional_args=[]):
-    additional_args.extend([ '-kb-accept-entry', 'Control+j,Control+m,KP_Enter',
-                             '-kb-remove-char-forward', 'Control+d',
-                             '-kb-delete-entry', '',
-                             '-kb-custom-1', 'Delete',
-                             '-kb-custom-2', 'Return',
-                             '-kb-custom-3', 'Alt+r',
-                             '-kb-custom-4', 'Shift+Delete',
-                             '-markup-rows',
-                             '-sep', '\\0',
-                             '-format', 'i',
-                             '-eh', '2',
-                             '-lines', '10'])
-    proc = subprocess.Popen(rofi_command+ additional_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    for e in entries:
-        proc.stdin.write((e).encode('utf-8'))
-        proc.stdin.write(struct.pack('B', 0))
-    proc.stdin.close()
-    answer = proc.stdout.read().decode("utf-8")
+def strip_tags(value: str) -> str:
+    return GLib.markup_escape_text(HTML_TAGS_PATTERN.sub('', value))
+
+
+def rofi_entry(notification: Notification) -> str:
+    stripped_summ = strip_tags(notification.summary)
+    stripped_app = strip_tags(notification.application)
+    stripped_body = strip_tags(' '.join(notification.body.split()))
+    return f"<b>{stripped_summ}</b> <small>({stripped_app})</small>\n<small>{stripped_body}</small>"
+
+
+def call_rofi(entries: Iterable[str], additional_args: List[str] = None) -> (int, int):
+    command = ROFI_COMMAND
+    if additional_args is not None:
+        command = list(command) + additional_args
+
+    proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+
+    with proc.stdin as stdin:
+        for e in entries:
+            stdin.write(e.encode('utf-8'))
+            stdin.write(struct.pack('B', 0))
+
+    selected = proc.stdout.read().decode('utf-8')
     exit_code = proc.wait()
-    # trim whitespace
-    if answer == '':
-        return None,exit_code
+
+    if selected:
+        return int(selected), exit_code
     else:
-        return int(answer),exit_code
+        return -1, exit_code
 
 
-def send_command(cmd):
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect("/tmp/rofi_notification_daemon")
-    print("Send: {cmd}".format(cmd=cmd))
-    client.send(bytes(cmd, 'utf-8'))
-    client.close()
+def send_command(command: str) -> None:
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.connect(UNIX_SOCKET)
+        print(f'Send: {command}')
+        client.send(bytes(f'{command}\n', encoding='utf-8'))
 
 
-did = None
-cont=True
-while cont:
-    cont=False
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect("/tmp/rofi_notification_daemon")
-    client.send(b"list",4)
-    ids=[]
-    entries=[]
-    index=0
-    urgent=[]
-    low=[]
-    args=[]
-    for a in linesplit(client):
-        if len(a) > 0:
-            notification = json.loads(a, object_hook=Notification.make)
-            ids.append(notification)
-            mst = ("<b>{summ}</b> <small>({app})</small>\n<small>{body}</small>".format(
-                   summ=GLib.markup_escape_text(strip_tags(notification.summary)),
-                   app=GLib.markup_escape_text(strip_tags(notification.application)),
-                   body=GLib.markup_escape_text(strip_tags(notification.body.replace("\n", " ")))))
-            entries.append(mst)
-            if Urgency(notification.urgency) is Urgency.CRITICAL:
-                urgent.append(str(index))
-            if Urgency(notification.urgency) is Urgency.LOW:
-                low.append(str(index))
-            index+=1
-    if len(urgent):
-        args.append("-u")
-        args.append(",".join(urgent))
-    if len(low):
-        args.append("-a")
-        args.append(",".join(low))
+def main() -> None:
+    selected = 0
+    while selected >= 0:
+        notifications = []
+        entries = []
+        urgent = []
+        low = []
+        args = []
 
-    # Select previous selected row.
-    if did != None:
-        args.append("-selected-row")
-        args.append(str(did))
-    # Show rofi
-    did, code = call_rofi(entries, args)
-    # print("{a},{b}".format(a=did,b=code))
-    if did is None or did < 0:
-        break
-    # Dismiss notification
-    if code == 10:
-        send_command("del:{mid}".format(mid=ids[did].id))
-        cont=True
-    # Seen notification
-    elif code == 11:
-        send_command("saw:{mid}".format(mid=ids[did].id))
-        cont=True
-    elif code == 12:
-        cont=True
-    # Dismiss all notifications for application
-    elif code == 13:
-        send_command("dela:{app}".format(app=ids[did].application))
-        cont=True
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.connect(UNIX_SOCKET)
+            client.send(b'list\n')
+            with client.makefile(mode='r', encoding='utf-8') as fp:
+                not_queue = json.load(fp, object_hook=Notification.make)
+                # reassigns indices of notifications
+                for index, notification in enumerate(not_queue):
+                    notifications.append(notification)
+                    entries.append(rofi_entry(notification))
+                    if notification.urgency == Urgency.CRITICAL:
+                        urgent.append(str(index))
+                    if notification.urgency == Urgency.LOW:
+                        low.append(str(index))
+
+        if urgent:
+            args.append('-u')
+            args.append(','.join(urgent))
+
+        if low:
+            args.append('-a')
+            args.append(','.join(low))
+
+        if selected >= 0:
+            args.append('-selected-row')
+            args.append(str(selected))
+
+        # Show rofi
+        selected, exit_code = call_rofi(entries, args)
+
+        if selected >= 0:
+            # Dismiss notification
+            if exit_code == 10:
+                send_command(f'del:{notifications[selected].id}')
+            # Seen notification
+            elif exit_code == 11:
+                send_command(f'saw:{notifications[selected].id}')
+            # Dismiss all notifications for application
+            elif exit_code == 13:
+                send_command(f'dela:{notifications[selected].application}')
+            elif exit_code != 12:
+                break
+
+
+if __name__ == '__main__':
+    main()

@@ -1,17 +1,16 @@
 import json
 import os
 import threading
+from io import TextIOBase
 from socketserver import ThreadingMixIn, UnixStreamServer, BaseRequestHandler
 
-from notification import NotificationQueue, Urgency
+from notification import NotificationQueue, Urgency, Notification
 
 
 class NotificationHandler(BaseRequestHandler):
-    def communication_command_send_list(self) -> None:
+    def communication_command_send_list(self, fp: TextIOBase) -> None:
         with self.server.not_queue.lock:
-            for notification in self.server.not_queue:
-                self.request.send(bytes(json.dumps(notification.asdict()), 'utf-8'))
-                self.request.send(b'\n')
+            json.dump(list(self.server.not_queue), fp, default=Notification.asdict)
 
     def communication_command_delete(self, nid: int) -> None:
         with self.server.not_queue.lock:
@@ -27,39 +26,36 @@ class NotificationHandler(BaseRequestHandler):
         with self.server.not_queue.lock:
             self.server.not_queue.see(nid)
 
-    def communication_command_num(self) -> None:
+    def communication_command_num(self, fp: TextIOBase) -> None:
         with self.server.not_queue.lock:
             urgent = 0
             for n in self.server.not_queue:
                 if n.urgency == Urgency.CRITICAL:
                     urgent += 1
-            cmd = "{:d}\n{:d}".format(len(self.server.not_queue), urgent)
-            self.request.send(bytes(cmd, 'utf-8'))
+            fp.write("{:d},{:d}".format(len(self.server.not_queue), urgent))
+            fp.flush()
 
     def handle(self) -> None:
         with self.server.not_queue.lock:
             self.server.not_queue.cleanup()
 
-        data = self.request.recv(1024).decode('utf-8').strip()
-        command = data.split(':')[0]
-
-        # Get number of notifications
-        if command == "num":
-            self.communication_command_num()
-        # Getting a listing.
-        elif command == "list":
-            self.communication_command_send_list()
-        # Dismiss and item.
-        elif command == "del":
-            nid = int(data.split(':')[1])
-            self.communication_command_delete(nid)
-        elif command == "dela":
-            application = data.split(':')[1]
-            self.communication_command_delete_apps(application)
-        # Saw an item, this sets the urgency to normal.
-        elif command == "saw":
-            nid = int(data.split(':')[1])
-            self.communication_command_saw(nid)
+        with self.request.makefile(mode='rw', encoding='utf-8') as fp:
+            data = fp.readline().strip()
+            cmd, *args = data.split(':')
+            # Get number of notifications
+            if cmd == "num":
+                self.communication_command_num(fp)
+            # Getting a listing.
+            elif cmd == "list":
+                self.communication_command_send_list(fp)
+            # Dismiss and item.
+            elif cmd == "del":
+                self.communication_command_delete(nid=int(args[0]))
+            elif cmd == "dela":
+                self.communication_command_delete_apps(application=args[0])
+            # Saw an item, this sets the urgency to normal.
+            elif cmd == "saw":
+                self.communication_command_saw(nid=int(args[0]))
 
 
 class ThreadedUnixStreamServer(ThreadingMixIn, UnixStreamServer):

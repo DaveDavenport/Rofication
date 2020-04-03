@@ -1,45 +1,71 @@
 #!/usr/bin/env python3
-import sys
-import socket
+
 import os
+import socket
+from dataclasses import dataclass
 from subprocess import check_output, Popen
+from typing import Optional
 
-notification_empty = os.getenv('i3xrocks_label_notify_none', check_output(['/usr/bin/xrescat', 'i3xrocks.label.notify.none', 'N'], universal_newlines=True))
-notification_some = os.getenv('i3xrocks_label_notify_some', check_output(['/usr/bin/xrescat', 'i3xrocks.label.notify.some', 'N'], universal_newlines=True))
-notification_error = os.getenv('i3xrocks_label_notify_error', check_output(['/usr/bin/xrescat', 'i3xrocks.label.notify.error', 'N'], universal_newlines=True))
-default_color = os.getenv('color', check_output(['/usr/bin/xrescat', 'i3xrocks.value.color', '#D8DEE9'], universal_newlines=True))
-default_label_color = os.getenv('label_color', check_output(['/usr/bin/xrescat', 'i3xrocks.label.color', '#7B8394'], universal_newlines=True))
-default_background_color = os.getenv('background_color', check_output(['/usr/bin/xrescat', 'i3xrocks.nominal', '#D8DEE9'], universal_newlines=True))
-critical_color = check_output(['/usr/bin/xrescat', 'i3xrocks.critical.color', '#BF616A'], universal_newlines=True)
-valuefont = os.getenv('font', check_output(['/usr/bin/xrescat', 'i3xrocks.value.font', 'Source Code Pro Medium 13'], universal_newlines=True))
 
-notification_value = 0
-icon = notification_empty
-label_color = default_label_color
-form = '<span foreground="{}">{}</span><span font_desc="{}" foreground="{}"> {}</span>'
+@dataclass
+class Resource:
+    default: str
+    xres_name: str
+    env_name: Optional[str] = None
 
-try:
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect("/tmp/rofi_notification_daemon")
-    client.sendall(bytes("num",'utf-8'))
+    def fetch(self) -> str:
+        env_val = None
+        if self.env_name:
+            env_val = os.getenv(self.env_name)
 
-    val = client.recv(32)
-    val = val.decode('utf-8')
-    l = val.split('\n',2)
-    notification_value = int(l[0])
-    if (notification_value > 0):
-        icon = notification_some
-        label_color = default_label_color
-    else:
-        label_color = default_background_color
-    if int(l[1]) > 0:
-        default_color = critical_color
-except (FileNotFoundError, ConnectionRefusedError):
-    icon = notification_error
-    label_color = critical_color
-    notification_value = "?"
+        # avoid calling xrescat if the environment variable is set
+        if env_val is None:
+            cmd = ('/usr/bin/xrescat', self.xres_name, self.default)
+            return check_output(cmd, universal_newlines=True)
+        else:
+            return env_val
 
-print (form.format(label_color, icon, valuefont, default_color, notification_value))
 
-if (os.getenv('button', "")):
-    Popen(['/usr/bin/python3', '/usr/share/rofication/rofication-gui.py'])
+def main() -> None:
+    if os.getenv('button'):
+        Popen(('/usr/bin/python3', '/usr/share/rofication/rofication-gui.py'))
+
+    value_font = Resource('Source Code Pro Medium 13', 'i3xrocks.value.font', 'font')
+
+    notify_none = Resource('N', 'i3xrocks.label.notify.none', 'i3xrocks_label_notify_none')
+    notify_some = Resource('N', 'i3xrocks.label.notify.some', 'i3xrocks_label_notify_some')
+    notify_error = Resource('N', 'i3xrocks.label.notify.error', 'i3xrocks_label_notify_error')
+
+    value_color = Resource('#D8DEE9', 'i3xrocks.value.color', 'color')
+    nominal_color = Resource('#D8DEE9', 'i3xrocks.nominal', 'background_color')
+    label_color = Resource('#7B8394', 'i3xrocks.label.color', 'label_color')
+    critical_color = Resource('#BF616A', 'i3xrocks.critical.color')
+
+    num: str
+    label_icon = notify_none
+    try:
+        data: str
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.connect('/tmp/rofi_notification_daemon')
+            client.send(b'num\n')
+            data = client.recv(32).decode('utf-8')
+        num, crit = data.split(',', 2)
+        if int(num) > 0:
+            label_icon = notify_some
+        else:
+            label_color = nominal_color
+        if int(crit) > 0:
+            value_color = critical_color
+    except (FileNotFoundError, ConnectionRefusedError):
+        label_icon = notify_error
+        label_color = critical_color
+        num = '?'
+
+    # only fetch resources if needed
+    label = f'<span foreground="{label_color.fetch()}">{label_icon.fetch()}</span>'
+    value = f'<span font_desc="{value_font.fetch()}" foreground="{value_color.fetch()}"> {num}</span>'
+    print(label + value)
+
+
+if __name__ == '__main__':
+    main()
