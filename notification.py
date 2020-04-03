@@ -68,12 +68,14 @@ class NotificationQueue:
         return self._lock
 
     def save(self, filename: str) -> None:
-        print("Saving notification queue")
         try:
+            print("Saving notification queue to file")
             with open(filename, 'w') as f:
                 f.write(jsonpickle.encode(self._queue))
         except:
-            warn("Failed to store notification queue")
+            warn("Failed to save notification queue")
+            if os.path.exists(filename):
+                os.unlink(filename)
 
     def see(self, nid: int) -> None:
         for notification in self._queue:
@@ -133,9 +135,14 @@ class NotificationQueue:
             print("Creating empty notification queue")
             return cls([], 1)
 
-        print("Loading notification queue from file")
-        with open(filename, 'r') as f:
-            queue = jsonpickle.decode(f.read())
+        try:
+            print("Loading notification queue from file")
+            with open(filename, 'r') as f:
+                queue = jsonpickle.decode(f.read())
+        except:
+            warn("Failed to load notification queue")
+            queue = []
+
         last_id = 1
         for notification in queue:
             if last_id < notification.id:
