@@ -5,10 +5,8 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Sequence, Optional, Iterable, MutableSequence, Iterator
+from typing import Sequence, Optional, Iterable, MutableSequence, Iterator, Mapping
 from warnings import warn
-
-import jsonpickle
 
 
 class Urgency(IntEnum):
@@ -34,8 +32,12 @@ class Notification:
     urgency: Urgency = Urgency.NORMAL
     actions: Sequence[str] = ()
 
-    def __str__(self) -> str:
-        return json.dumps(vars(self))
+    def asdict(self) -> Mapping[str, any]:
+        return vars(self)
+
+    @classmethod
+    def make(cls, dct: Mapping[str, any]) -> 'Notification':
+        return cls(**dct)
 
 
 class NotificationObserver(ABC):
@@ -71,7 +73,7 @@ class NotificationQueue:
         try:
             print("Saving notification queue to file")
             with open(filename, 'w') as f:
-                f.write(jsonpickle.encode(self._queue))
+                json.dump(self._queue, f, default=Notification.asdict)
         except:
             warn("Failed to save notification queue")
             if os.path.exists(filename):
@@ -138,7 +140,7 @@ class NotificationQueue:
         try:
             print("Loading notification queue from file")
             with open(filename, 'r') as f:
-                queue = jsonpickle.decode(f.read())
+                queue = json.load(f, object_hook=Notification.make)
         except:
             warn("Failed to load notification queue")
             queue = []

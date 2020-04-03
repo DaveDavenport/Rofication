@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-import sys
+import json
 import re
 import socket
 import struct
 import subprocess
-import jsonpickle
+
 from gi.repository import GLib
-from enum import Enum
-from notification import Urgency
+
+from notification import Urgency, Notification
+
 
 def linesplit(socket):
     buffer = socket.recv(16)
@@ -83,7 +84,7 @@ while cont:
     args=[]
     for a in linesplit(client):
         if len(a) > 0:
-            notification = jsonpickle.decode(a)
+            notification = json.loads(a, object_hook=Notification.make)
             ids.append(notification)
             mst = ("<b>{summ}</b> <small>({app})</small>\n<small>{body}</small>".format(
                    summ=GLib.markup_escape_text(strip_tags(notification.summary)),

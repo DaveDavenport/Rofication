@@ -1,8 +1,7 @@
+import json
 import os
 import threading
 from socketserver import ThreadingMixIn, UnixStreamServer, BaseRequestHandler
-
-import jsonpickle
 
 from notification import NotificationQueue, Urgency
 
@@ -11,7 +10,7 @@ class NotificationHandler(BaseRequestHandler):
     def communication_command_send_list(self) -> None:
         with self.server.not_queue.lock:
             for notification in self.server.not_queue:
-                self.request.send(bytes(jsonpickle.encode(notification), 'utf-8'))
+                self.request.send(bytes(json.dumps(notification.asdict()), 'utf-8'))
                 self.request.send(b'\n')
 
     def communication_command_delete(self, nid: int) -> None:
