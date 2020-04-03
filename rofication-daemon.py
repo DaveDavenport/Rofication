@@ -4,22 +4,19 @@ import dbus
 from dbus.mainloop import glib
 from gi.repository import GLib
 
-import handler
-import notification
-from rofication import NotificationServer
+from rofication import NotificationServer, NotificationQueue, NotificationHandler, UNIX_SOCKET
 
 
 def main() -> None:
-    """ Create notification queue """
-    not_queue = notification.NotificationQueue.load("not.json")
+    not_queue = NotificationQueue.load("not.json")
 
-    """ Setup DBUS"""
+    # Setup DBUS
     glib.DBusGMainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
     bus_name = dbus.service.BusName("org.freedesktop.Notifications", session_bus)
-    not_handler = handler.NotificationHandler(session_bus, '/org/freedesktop/Notifications', not_queue)
+    not_handler = NotificationHandler(session_bus, '/org/freedesktop/Notifications', not_queue)
 
-    with NotificationServer("/tmp/rofi_notification_daemon", not_queue) as server:
+    with NotificationServer(UNIX_SOCKET, not_queue) as server:
         server.start()
         try:
             ##

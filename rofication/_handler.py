@@ -3,14 +3,15 @@ from typing import Tuple, Sequence, Mapping
 
 from dbus import service, connection
 
-from notification import Notification, NotificationQueue, NotificationObserver, CloseReason
+from ._notification import Notification, CloseReason
+from ._queue import NotificationQueue, NotificationQueueObserver
 
 
 class NotificationHandler(service.Object):
     def __init__(self, conn: connection.Connection, object_path: str, queue: NotificationQueue) -> None:
         super().__init__(conn, object_path)
         self.nq: NotificationQueue = queue
-        self.nq.observers.append(NotificationHandlerObserver(self))
+        self.nq.observers.append(HandlerNotificationQueueObserver(self))
 
     @service.method("org.freedesktop.Notifications", in_signature='susssasa{ss}i', out_signature='u')
     def Notify(self, app_name: str, replaces_id: int, app_icon: str, summary: str,
@@ -51,7 +52,7 @@ class NotificationHandler(service.Object):
         return "rofication", "http://gmpclient.org/", "0.0.1", "1"
 
 
-class NotificationHandlerObserver(NotificationObserver):
+class HandlerNotificationQueueObserver(NotificationQueueObserver):
     def __init__(self, handler: NotificationHandler) -> None:
         self.handler: NotificationHandler = handler
 

@@ -4,7 +4,8 @@ import threading
 from io import TextIOBase
 from socketserver import ThreadingMixIn, UnixStreamServer, BaseRequestHandler
 
-from notification import NotificationQueue, Urgency, Notification
+from ._notification import Urgency, Notification
+from ._queue import NotificationQueue
 
 
 class NotificationHandler(BaseRequestHandler):

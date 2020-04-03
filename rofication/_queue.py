@@ -3,44 +3,13 @@ import os
 import threading
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import IntEnum
-from typing import Sequence, Optional, Iterable, MutableSequence, Iterator, Mapping
+from typing import Sequence, Iterable, MutableSequence, Iterator
 from warnings import warn
 
-
-class Urgency(IntEnum):
-    LOW = 0
-    NORMAL = 1
-    CRITICAL = 2
+from ._notification import Notification, CloseReason, Urgency
 
 
-class CloseReason(IntEnum):
-    EXPIRED = 1
-    DISMISSED = 2
-    CLOSED = 3
-    RESERVED = 4
-
-
-@dataclass
-class Notification:
-    id: Optional[int] = None
-    deadline: Optional[float] = None
-    summary: Optional[str] = None
-    body: Optional[str] = None
-    application: Optional[str] = None
-    urgency: Urgency = Urgency.NORMAL
-    actions: Sequence[str] = ()
-
-    def asdict(self) -> Mapping[str, any]:
-        return vars(self)
-
-    @classmethod
-    def make(cls, dct: Mapping[str, any]) -> 'Notification':
-        return cls(**dct)
-
-
-class NotificationObserver(ABC):
+class NotificationQueueObserver(ABC):
     @abstractmethod
     def activate(self, notification: Notification) -> None:
         pass
@@ -57,7 +26,7 @@ class NotificationQueue:
         self.last_id: int = last_id
         self.allowed_to_expire: Sequence[str] = []
         self.single_notification_apps: Sequence[str] = ["VLC media player"]
-        self.observers: MutableSequence[NotificationObserver] = []
+        self.observers: MutableSequence[NotificationQueueObserver] = []
 
     def __len__(self) -> int:
         return len(self._queue)
