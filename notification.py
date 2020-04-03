@@ -3,6 +3,7 @@ import os
 import threading
 import time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Sequence, Optional, Iterable, MutableSequence, Iterator
 from warnings import warn
@@ -23,15 +24,15 @@ class CloseReason(IntEnum):
     RESERVED = 4
 
 
+@dataclass
 class Notification:
-    def __init__(self) -> None:
-        self.id: Optional[int] = None
-        self.deadline: Optional[float] = None
-        self.summary: Optional[str] = None
-        self.body: Optional[str] = None
-        self.application: Optional[str] = None
-        self.urgency: Urgency = Urgency.NORMAL
-        self.actions: Sequence[str] = []
+    id: Optional[int] = None
+    deadline: Optional[float] = None
+    summary: Optional[str] = None
+    body: Optional[str] = None
+    application: Optional[str] = None
+    urgency: Urgency = Urgency.NORMAL
+    actions: Sequence[str] = ()
 
     def __str__(self) -> str:
         return json.dumps(vars(self))
