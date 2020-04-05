@@ -5,8 +5,7 @@ from typing import Union
 
 from rofication import RoficationGui, RoficationClient, resources, Resource
 
-
-def main() -> None:
+if __name__ == '__main__':
     client = RoficationClient()
 
     if os.getenv('button'):
@@ -36,7 +35,3 @@ def main() -> None:
     label = f'<span foreground="{label_color.fetch()}">{label_icon.fetch()}</span>'
     value = f'<span font_desc="{value_font.fetch()}" foreground="{value_color.fetch()}"> {num}</span>'
     print(label + value)
-
-
-if __name__ == '__main__':
-    main()
