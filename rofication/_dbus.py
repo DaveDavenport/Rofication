@@ -20,8 +20,8 @@ class DbusObjectNotificationQueueObserver(NotificationQueueObserver):
         if "default" in notification.actions:
             self._object.ActionInvoked(notification.id, "default")
 
-    def close(self, nid: int, reason: CloseReason) -> None:
-        self._object.NotificationClosed(nid, reason)
+    def close(self, notification: Notification, reason: CloseReason) -> None:
+        self._object.NotificationClosed(notification.id, reason)
 
 
 class RoficationDbusObject(service.Object):
