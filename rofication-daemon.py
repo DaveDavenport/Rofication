@@ -4,7 +4,7 @@ import dbus
 from dbus.mainloop import glib
 from gi.repository import GLib
 
-from rofication import NotificationServer, NotificationQueue, NotificationHandler, ROFICATION_UNIX_SOCK
+from rofication import RoficationServer, NotificationQueue, NotificationHandler
 
 
 def main() -> None:
@@ -16,7 +16,7 @@ def main() -> None:
     bus_name = dbus.service.BusName("org.freedesktop.Notifications", session_bus)
     not_handler = NotificationHandler(session_bus, '/org/freedesktop/Notifications', not_queue)
 
-    with NotificationServer(ROFICATION_UNIX_SOCK, not_queue) as server:
+    with RoficationServer(not_queue) as server:
         server.start()
         try:
             ##

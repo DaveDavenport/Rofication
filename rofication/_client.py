@@ -21,15 +21,6 @@ class RoficationClient:
             print(f'Send: {command}:{arg}', file=self._out)
             sck.send(bytes(f'{command}:{arg}\n', encoding='utf-8'))
 
-    def see(self, nid: int) -> None:
-        self._send('see', nid)
-
-    def delete(self, nid: int) -> None:
-        self._send('del', nid)
-
-    def delete_all(self, application: str) -> None:
-        self._send('dela', application)
-
     def count(self) -> (int, int):
         with self._client_socket() as sck:
             print('Send: num', file=self._out)
@@ -37,9 +28,18 @@ class RoficationClient:
             data = sck.recv(32).decode('utf-8')
             return (int(x) for x in data.split(',', 2))
 
+    def delete(self, nid: int) -> None:
+        self._send('del', nid)
+
+    def delete_all(self, application: str) -> None:
+        self._send('dela', application)
+
     def list(self) -> Sequence[Notification]:
         with self._client_socket() as sck:
             print('Send: list', file=self._out)
             sck.send(b'list\n')
             with sck.makefile(mode='r', encoding='utf-8') as fp:
                 return json.load(fp, object_hook=Notification.make)
+
+    def see(self, nid: int) -> None:
+        self._send('see', nid)
