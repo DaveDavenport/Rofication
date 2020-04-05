@@ -8,7 +8,7 @@ from warnings import warn
 from ._notification import Notification, CloseReason, Urgency
 from ._util import Event
 
-ALLOWED_TO_EXPIRE = ()
+ALLOWED_TO_EXPIRE = ('notify-send',)
 SINGLE_NOTIFICATION_APPS = ('VLC media player',)
 
 
