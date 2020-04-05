@@ -1,7 +1,21 @@
 import os
+from collections import MutableSequence, Callable
 from dataclasses import dataclass
 from subprocess import check_output
 from typing import Optional
+
+
+class Event:
+    def __init__(self) -> None:
+        self._observers: MutableSequence[Callable] = []
+
+    def __iadd__(self, observer: Callable) -> 'Event':
+        self._observers.append(observer)
+        return self
+
+    def notify(self, *args, **kwargs) -> None:
+        for observer in self._observers:
+            observer(*args, **kwargs)
 
 
 @dataclass

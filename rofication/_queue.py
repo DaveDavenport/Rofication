@@ -2,31 +2,23 @@ import json
 import os
 import threading
 import time
-from abc import ABC, abstractmethod
-from typing import Sequence, Iterable, MutableSequence, Iterator, MutableMapping, Mapping, Optional
+from typing import Iterable, Iterator, MutableMapping, Mapping, Optional
 from warnings import warn
 
 from ._notification import Notification, CloseReason, Urgency
+from ._util import Event
 
-
-class NotificationQueueObserver(ABC):
-    @abstractmethod
-    def activate(self, notification: Notification) -> None:
-        pass
-
-    @abstractmethod
-    def close(self, notification: Notification, reason: CloseReason) -> None:
-        pass
+ALLOWED_TO_EXPIRE = ()
+SINGLE_NOTIFICATION_APPS = ('VLC media player',)
 
 
 class NotificationQueue:
-    def __init__(self, mapping: Mapping[int, Notification] = None, last_id: int = 1) -> None:
+    def __init__(self, mapping: Mapping[int, Notification] = None) -> None:
         self._lock = threading.Lock()
+        self._last_id: int = max(mapping.keys()) + 1 if mapping else 1
         self._mapping: MutableMapping[int, Notification] = {} if mapping is None else dict(mapping)
-        self.last_id: int = last_id
-        self.allowed_to_expire: Sequence[str] = []
-        self.single_notification_apps: Sequence[str] = ['VLC media player']
-        self.observers: MutableSequence[NotificationQueueObserver] = []
+        self.notification_seen = Event()
+        self.notification_closed = Event()
 
     def __len__(self) -> int:
         return len(self._mapping)
@@ -53,8 +45,7 @@ class NotificationQueue:
             print(f'Seeing: {nid}')
             notification = self._mapping[nid]
             notification.urgency = Urgency.NORMAL
-            for observer in self.observers:
-                observer.activate(notification)
+            self.notification_seen.notify(notification)
             return
         warn(f'Unable to find notification {nid}')
 
@@ -71,7 +62,7 @@ class NotificationQueue:
 
     def put(self, notification: Notification) -> None:
         to_replace: Optional[int]
-        if notification.application in self.single_notification_apps:
+        if notification.application in SINGLE_NOTIFICATION_APPS:
             # replace notification for applications that only allow one
             to_replace = next((ntf.id for ntf in self._mapping.values()
                                if ntf.application == notification.application), None)
@@ -85,8 +76,8 @@ class NotificationQueue:
             self._mapping[notification.id] = notification
             return
 
-        notification.id = self.last_id
-        self.last_id += 1
+        notification.id = self._last_id
+        self._last_id += 1
         print(f'Adding: {notification.id}')
         self._mapping[notification.id] = notification
 
@@ -94,19 +85,18 @@ class NotificationQueue:
         now = time.time()
         to_remove = [ntf.id for ntf in self._mapping.values()
                      if ntf.deadline and ntf.deadline < now
-                     and ntf.application in self.allowed_to_expire]
+                     and ntf.application in ALLOWED_TO_EXPIRE]
         if to_remove:
             print(f'Expired: {to_remove}')
-            for observer in self.observers:
-                for nid in to_remove:
-                    observer.close(self._mapping[nid], CloseReason.EXPIRED)
-                    del self._mapping[nid]
+            for nid in to_remove:
+                self.notification_closed.notify(self._mapping[nid], CloseReason.EXPIRED)
+                del self._mapping[nid]
 
     @classmethod
     def load(cls, filename: str) -> 'NotificationQueue':
         if not os.path.exists(filename):
             print('Creating empty notification queue')
-            return cls({}, 1)
+            return cls({})
 
         try:
             print('Loading notification queue from file')
@@ -116,6 +106,4 @@ class NotificationQueue:
             warn('Failed to load notification queue')
             mapping = {}
 
-        last_id = max(mapping.keys()) if mapping else 0
-        print(f'Found last id: {last_id}')
-        return cls(mapping, last_id + 1)
+        return cls(mapping)

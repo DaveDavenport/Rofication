@@ -19,35 +19,35 @@ class ThreadedUnixStreamServer(ThreadingMixIn, UnixStreamServer):
 
 class RoficationRequestHandler(BaseRequestHandler):
     def count(self, fp: TextIO) -> None:
-        with self.server.not_queue.lock:
+        with self.server.queue.lock:
             crit = 0
-            for n in self.server.not_queue:
+            for n in self.server.queue:
                 if n.urgency == Urgency.CRITICAL:
                     crit += 1
-            fp.write(f"{len(self.server.not_queue)},{crit}")
+            fp.write(f'{len(self.server.queue)},{crit}')
             fp.flush()
 
     def delete(self, nid: int) -> None:
-        with self.server.not_queue.lock:
-            self.server.not_queue.remove(nid)
+        with self.server.queue.lock:
+            self.server.queue.remove(nid)
 
     def delete_all(self, application: str) -> None:
-        with self.server.not_queue.lock:
-            to_remove = [n.id for n in self.server.not_queue
+        with self.server.queue.lock:
+            to_remove = [n.id for n in self.server.queue
                          if n.application == application]
-            self.server.not_queue.remove_all(to_remove)
+            self.server.queue.remove_all(to_remove)
 
     def list(self, fp: TextIO) -> None:
-        with self.server.not_queue.lock:
-            json.dump(list(self.server.not_queue), fp, default=Notification.asdict)
+        with self.server.queue.lock:
+            json.dump(list(self.server.queue), fp, default=Notification.asdict)
 
     def see(self, nid: int) -> None:
-        with self.server.not_queue.lock:
-            self.server.not_queue.see(nid)
+        with self.server.queue.lock:
+            self.server.queue.see(nid)
 
     def handle(self) -> None:
-        with self.server.not_queue.lock:
-            self.server.not_queue.cleanup()
+        with self.server.queue.lock:
+            self.server.queue.cleanup()
 
         with self.request.makefile(mode='rw', encoding='utf-8') as fp:
             cmd, *args = fp.readline().strip().split(':')
@@ -69,12 +69,12 @@ class RoficationRequestHandler(BaseRequestHandler):
 
 
 class RoficationServer(ThreadedUnixStreamServer):
-    def __init__(self, not_queue: NotificationQueue, server_address: str = ROFICATION_UNIX_SOCK) -> None:
+    def __init__(self, queue: NotificationQueue, server_address: str = ROFICATION_UNIX_SOCK) -> None:
         # pre-start cleanup
         if os.path.exists(server_address):
             os.remove(server_address)
         super().__init__(server_address, RoficationRequestHandler)
-        self.not_queue: NotificationQueue = not_queue
+        self.queue: NotificationQueue = queue
 
     def __exit__(self, *args) -> None:
         super().__exit__(*args)

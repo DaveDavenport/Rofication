@@ -1,4 +1,4 @@
-from .._resource import Resource
+from .._util import Resource
 
 value_font = Resource(env_name='font', xres_name='i3xrocks.value.font', default='Source Code Pro Medium 13')
 

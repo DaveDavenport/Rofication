@@ -5,23 +5,11 @@ from dbus import service, SessionBus
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository.GLib import MainLoop
 
-from ._notification import Notification, CloseReason, Urgency
-from ._queue import NotificationQueue, NotificationQueueObserver
+from ._notification import Notification, Urgency
+from ._queue import NotificationQueue
 
 NOTIFICATIONS_DBUS_INTERFACE = 'org.freedesktop.Notifications'
 NOTIFICATIONS_DBUS_OBJECT_PATH = '/org/freedesktop/Notifications'
-
-
-class DbusObjectNotificationQueueObserver(NotificationQueueObserver):
-    def __init__(self, obj: 'RoficationDbusObject') -> None:
-        self._object: RoficationDbusObject = obj
-
-    def activate(self, notification: Notification) -> None:
-        if "default" in notification.actions:
-            self._object.ActionInvoked(notification.id, "default")
-
-    def close(self, notification: Notification, reason: CloseReason) -> None:
-        self._object.NotificationClosed(notification.id, reason)
 
 
 class RoficationDbusObject(service.Object):
@@ -33,8 +21,18 @@ class RoficationDbusObject(service.Object):
                 bus=SessionBus(mainloop=DBusGMainLoop())
             )
         )
-        self._not_queue: NotificationQueue = queue
-        self._not_queue.observers.append(DbusObjectNotificationQueueObserver(self))
+        self._queue: NotificationQueue = queue
+
+        def notification_seen(notification):
+            if 'default' in notification.actions:
+                self.ActionInvoked(notification.id, 'default')
+
+        self._queue.notification_seen += notification_seen
+
+        def notification_closed(notification, reason):
+            self.NotificationClosed(notification.id, reason)
+
+        self._queue.notification_closed += notification_closed
 
     @service.signal(NOTIFICATIONS_DBUS_INTERFACE, signature='us')
     def ActionInvoked(self, id_in, action_key_in):
@@ -42,16 +40,16 @@ class RoficationDbusObject(service.Object):
 
     @service.method(NOTIFICATIONS_DBUS_INTERFACE, in_signature='u', out_signature='')
     def CloseNotification(self, id: int) -> None:
-        with self._not_queue.lock:
-            self._not_queue.remove(id)
+        with self._queue.lock:
+            self._queue.remove(id)
 
     @service.method(NOTIFICATIONS_DBUS_INTERFACE, in_signature='', out_signature='as')
     def GetCapabilities(self) -> Sequence[str]:
-        return "actions", "body"
+        return 'actions', 'body'
 
     @service.method(NOTIFICATIONS_DBUS_INTERFACE, in_signature='', out_signature='ssss')
     def GetServerInformation(self) -> Tuple[str, str, str, str]:
-        return "rofication", "https://github.com/regolith-linux/regolith-rofication", "1.4", "1.2"
+        return 'rofication', 'https://github.com/regolith-linux/regolith-rofication', '1.2.0', '1.2'
 
     @service.signal(NOTIFICATIONS_DBUS_INTERFACE, signature='uu')
     def NotificationClosed(self, id_in, reason_in):
@@ -67,11 +65,11 @@ class RoficationDbusObject(service.Object):
         notification.body = body
         notification.actions = tuple(actions)
         if int(expire_timeout) > 0:
-            notification.deadline = time.time() + int(expire_timeout) / 1000.0
+            notification.deadline = time.time() + expire_timeout / 1000.0
         if 'urgency' in hints:
             notification.urgency = Urgency(int(hints['urgency']))
-        with self._not_queue.lock:
-            self._not_queue.put(notification)
+        with self._queue.lock:
+            self._queue.put(notification)
         return notification.id
 
 
