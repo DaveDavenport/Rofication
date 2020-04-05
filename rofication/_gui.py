@@ -1,13 +1,12 @@
-import json
 import re
 import struct
 import subprocess
-from typing import Iterable, List, TextIO
+from typing import Iterable, List
 
 from gi.repository import GLib
 
+from ._client import RoficationClient
 from ._notification import Urgency, Notification
-from ._static import notification_client, UNIX_SOCKET, nullio
 
 HTML_TAGS_PATTERN = re.compile(r'<[^>]*?>')
 
@@ -61,14 +60,9 @@ def call_rofi(entries: Iterable[str], additional_args: List[str] = None) -> (int
         return -1, exit_code
 
 
-class Rofication():
-    def __init__(self, out: TextIO = nullio):
-        self.out: TextIO = out
-
-    def _command(self, command: str) -> None:
-        with notification_client(UNIX_SOCKET) as client:
-            print(f'Send: {command}', file=self.out)
-            client.send(bytes(f'{command}\n', encoding='utf-8'))
+class RoficationGui():
+    def __init__(self, client: RoficationClient = None):
+        self._client: RoficationClient = RoficationClient() if client is None else client
 
     def run(self) -> None:
         selected = 0
@@ -79,18 +73,14 @@ class Rofication():
             low = []
             args = []
 
-            with notification_client(UNIX_SOCKET) as client:
-                client.send(b'list\n')
-                with client.makefile(mode='r', encoding='utf-8') as fp:
-                    not_queue = json.load(fp, object_hook=Notification.make)
-                    # reassigns indices of notifications
-                    for index, notification in enumerate(not_queue):
-                        notifications.append(notification)
-                        entries.append(rofi_entry(notification))
-                        if notification.urgency == Urgency.CRITICAL:
-                            urgent.append(str(index))
-                        if notification.urgency == Urgency.LOW:
-                            low.append(str(index))
+            # reassigns indices of notifications
+            for index, notification in enumerate(self._client.list()):
+                notifications.append(notification)
+                entries.append(rofi_entry(notification))
+                if notification.urgency == Urgency.CRITICAL:
+                    urgent.append(str(index))
+                if notification.urgency == Urgency.LOW:
+                    low.append(str(index))
 
             if urgent:
                 args.append('-u')
@@ -110,12 +100,12 @@ class Rofication():
             if selected >= 0:
                 # Dismiss notification
                 if exit_code == 10:
-                    self._command(f'del:{notifications[selected].id}')
+                    self._client.delete(notifications[selected].id)
                 # Seen notification
                 elif exit_code == 11:
-                    self._command(f'saw:{notifications[selected].id}')
+                    self._client.see(notifications[selected].id)
                 # Dismiss all notifications for application
                 elif exit_code == 13:
-                    self._command(f'dela:{notifications[selected].application}')
+                    self._client.delete_all(notifications[selected].application)
                 elif exit_code != 12:
                     break

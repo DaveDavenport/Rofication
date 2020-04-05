@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
-from rofication import Rofication
+from rofication import RoficationGui, RoficationClient
 
 if __name__ == '__main__':
-    Rofication(sys.stdout).run()
+    RoficationGui(RoficationClient(sys.stdout)).run()

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
 import os
-import socket
 from dataclasses import dataclass
 from subprocess import check_output
-from typing import Optional
+from typing import Optional, Union
 
-from rofication import Rofication
+from rofication import RoficationGui, RoficationClient
 
 
 @dataclass
@@ -29,8 +28,10 @@ class Resource:
 
 
 def main() -> None:
+    client = RoficationClient()
+
     if os.getenv('button'):
-        Rofication().run()
+        RoficationGui(client).run()
 
     value_font = Resource('Source Code Pro Medium 13', 'i3xrocks.value.font', 'font')
 
@@ -43,20 +44,15 @@ def main() -> None:
     label_color = Resource('#7B8394', 'i3xrocks.label.color', 'label_color')
     critical_color = Resource('#BF616A', 'i3xrocks.critical.color')
 
-    num: str
+    num: Union[int, str]
     label_icon = notify_none
     try:
-        data: str
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-            client.connect('/tmp/rofi_notification_daemon')
-            client.send(b'num\n')
-            data = client.recv(32).decode('utf-8')
-        num, crit = data.split(',', 2)
-        if int(num) > 0:
+        num, crit = client.count()
+        if num > 0:
             label_icon = notify_some
         else:
             label_color = nominal_color
-        if int(crit) > 0:
+        if crit > 0:
             value_color = critical_color
     except (FileNotFoundError, ConnectionRefusedError):
         label_icon = notify_error
