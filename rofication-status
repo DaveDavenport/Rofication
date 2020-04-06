@@ -6,11 +6,6 @@ from typing import Union
 from rofication import RoficationGui, RoficationClient, resources, Resource
 
 if __name__ == '__main__':
-    client = RoficationClient()
-
-    if os.getenv('button'):
-        RoficationGui(client).run()
-
     # defaults
     label_icon: Resource = resources.notify_none
     label_color: Resource = resources.label_color
@@ -19,6 +14,11 @@ if __name__ == '__main__':
 
     num: Union[int, str]
     try:
+        client = RoficationClient()
+
+        if os.getenv('button'):
+            RoficationGui(client).run()
+
         num, crit = client.count()
         if num > 0:
             label_icon = resources.notify_some
