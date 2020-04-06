@@ -1,6 +1,5 @@
 import os
 from collections import MutableSequence, Callable
-from dataclasses import dataclass
 from subprocess import check_output
 from typing import Optional
 
@@ -18,11 +17,11 @@ class Event:
             observer(*args, **kwargs)
 
 
-@dataclass
 class Resource:
-    default: str
-    xres_name: str
-    env_name: Optional[str] = None
+    def __init__(self, default: str, xres_name: str, env_name: Optional[str] = None):
+        self.default: str = default
+        self.xres_name: str = xres_name
+        self.env_name: Optional[str] = env_name
 
     def fetch(self) -> str:
         env_val = None

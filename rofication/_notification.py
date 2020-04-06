@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from enum import IntEnum
 from typing import Sequence, Optional, Mapping
 
@@ -16,19 +15,27 @@ class CloseReason(IntEnum):
     RESERVED = 4
 
 
-@dataclass
 class Notification:
-    id: Optional[int] = None
-    deadline: Optional[float] = None
-    summary: Optional[str] = None
-    body: Optional[str] = None
-    application: Optional[str] = None
-    urgency: Urgency = Urgency.NORMAL
-    actions: Sequence[str] = ()
+    def __init__(self) -> None:
+        self.id: Optional[int] = None
+        self.deadline: Optional[float] = None
+        self.summary: Optional[str] = None
+        self.body: Optional[str] = None
+        self.application: Optional[str] = None
+        self.urgency: Urgency = Urgency.NORMAL
+        self.actions: Sequence[str] = ()
 
     def asdict(self) -> Mapping[str, any]:
-        return vars(self)
+        return {field: value for field, value in vars(self).items() if value is not None}
 
     @classmethod
     def make(cls, dct: Mapping[str, any]) -> 'Notification':
-        return cls(**dct)
+        notification: 'Notification' = cls()
+        notification.id = dct.get('id')
+        notification.deadline = dct.get('deadline')
+        notification.summary = dct.get('summary')
+        notification.body = dct.get('body')
+        notification.application = dct.get('application')
+        notification.urgency = Urgency(dct.get('urgency', Urgency.NORMAL))
+        notification.actions = tuple(dct.get('actions', ()))
+        return notification
