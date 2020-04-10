@@ -2,5 +2,5 @@
 #
 # Displays notifications.
 [rofication]
-command=/usr/share/i3xrocks/rofication-statusi3blocks.py
+command=rofication-status
 interval=10
