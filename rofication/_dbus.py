@@ -5,6 +5,7 @@ from dbus import service, SessionBus
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository.GLib import MainLoop
 
+from ._metadata import ROFICATION_VERSION, ROFICATION_NAME, ROFICATION_URL
 from ._notification import Notification, Urgency
 from ._queue import NotificationQueue
 
@@ -49,7 +50,7 @@ class RoficationDbusObject(service.Object):
 
     @service.method(NOTIFICATIONS_DBUS_INTERFACE, in_signature='', out_signature='ssss')
     def GetServerInformation(self) -> Tuple[str, str, str, str]:
-        return 'rofication', 'https://github.com/regolith-linux/regolith-rofication', '1.2.0', '1.2'
+        return ROFICATION_NAME, ROFICATION_URL, ROFICATION_VERSION, '1.2'
 
     @service.signal(NOTIFICATIONS_DBUS_INTERFACE, signature='uu')
     def NotificationClosed(self, id_in, reason_in):

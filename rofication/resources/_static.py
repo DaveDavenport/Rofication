@@ -1,4 +1,7 @@
+from .._metadata import ROFICATION_VERSION
 from .._util import Resource
+
+__version__ = ROFICATION_VERSION
 
 value_font = Resource(env_name='font', xres_name='i3xrocks.value.font', default='Source Code Pro Medium 13')
 
