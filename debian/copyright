@@ -4,11 +4,13 @@ Source: http://regolith-linux.org
 
 Files: *
 Copyright: 2013-2017 Dave Davenport <qball@gmpclient.org>
-           2019 Ken Gilmer <kgilmer@gmail.com>
+           2019-2020 Ken Gilmer <kgilmer@gmail.com>
+           2020 Marco Buzzanca <marco.bzn@gmail.com>
 License: MIT
 
 Files: debian/*
-Copyright: 2019 Ken Gilmer <kgilmer@gmail.com>
+Copyright: 2019-2020 Ken Gilmer <kgilmer@gmail.com>
+           2020 Marco Buzzanca <marco.bzn@gmail.com>
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
