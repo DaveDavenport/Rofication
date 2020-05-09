@@ -22,6 +22,7 @@ if __name__ == '__main__':
         num, crit = client.count()
         if num > 0:
             label_icon = resources.notify_some
+            value_color = resources.warning_color
         if crit > 0:
             value_color = resources.critical_color
     except (FileNotFoundError, ConnectionRefusedError):

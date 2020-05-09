@@ -1,3 +1,9 @@
+regolith-rofication (1.2.2-1) focal; urgency=medium
+
+  * i3xrocks.warning now used for value color if there are non-critical notifications.
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Fri 08 May 2020 08:16:50 -0700
+
 regolith-rofication (1.2.1-1) focal; urgency=medium
 
   * Package adjustment to color of icon under default state. 
