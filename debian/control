@@ -23,7 +23,9 @@ Depends: ${misc:Depends},
          i3xrocks,
          regolith-i3xrocks-config,
          gnome-flashback
-Description: Rofication notification system
 Provides: notification-daemon
 Replaces: notification-daemon
 Conflicts: notify-osd, dunst
+Description: Rofication notification system
+ Rofication provides an unobtrusive notification system based on an
+ i3xrocks indicator and a rofi frontend.
