@@ -28,12 +28,3 @@ Replaces: notification-daemon
 Conflicts: notify-osd, dunst
 Description: Rofication notification system
  Rofication provides an unobtrusive notification system based on a rofi frontend.
-
-Package: i3xrocks-rofication
-Architecture: any
-Depends: ${misc:Depends},    
-         i3xrocks,
-         regolith-rofication,
-         regolith-i3xrocks-config
-Description: Status indicator for rofication
- See active system notifications on the bar.
