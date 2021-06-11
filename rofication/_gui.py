@@ -110,6 +110,8 @@ class RoficationGui():
                 # Dismiss all notifications for application
                 elif exit_code == 13:
                     self._client.delete_all(notifications[selected].application)
-                    break
+                    # This was the last group of notifications
+                    if len(notifications) == 1:
+                        break
                 elif exit_code != 12:
                     break
