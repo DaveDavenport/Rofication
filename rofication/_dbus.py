@@ -8,6 +8,7 @@ from gi.repository.GLib import MainLoop
 from ._metadata import ROFICATION_VERSION, ROFICATION_NAME, ROFICATION_URL
 from ._notification import Notification, Urgency
 from ._queue import NotificationQueue
+from datetime import datetime
 
 NOTIFICATIONS_DBUS_INTERFACE = 'org.freedesktop.Notifications'
 NOTIFICATIONS_DBUS_OBJECT_PATH = '/org/freedesktop/Notifications'
@@ -64,6 +65,7 @@ class RoficationDbusObject(service.Object):
         notification.application = app_name
         notification.summary = summary
         notification.body = body
+        notification.timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         notification.actions = tuple(actions)
         if int(expire_timeout) > 0:
             notification.deadline = time.time() + expire_timeout / 1000.0
