@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 
+import argparse
 from rofication import RoficationServer, NotificationQueue, RoficationDbusService
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Rofication daemon - listen to notifications on DBus and expose them to rofication.')
+    parser.add_argument('--tsformat', help='Format for the date and time to use when displaying notifications, in python strftime format. Defaults to locale format. Use "" if you don\'t want any time information', default='%x %X')
+    args = parser.parse_args()
+
     not_queue = NotificationQueue.load('not.json')
-    service = RoficationDbusService(not_queue)
+    service = RoficationDbusService(not_queue, args.tsformat)
 
     with RoficationServer(not_queue) as server:
         server.start()
