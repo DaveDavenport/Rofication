@@ -36,8 +36,8 @@ def rofi_entry(notification: Notification) -> str:
     stripped_summ = strip_tags(notification.summary)
     stripped_app = strip_tags(notification.application)
     stripped_body = strip_tags(' '.join(notification.body.split()))
-    stripped_timestamp = strip_tags (notification.timestamp) if notification.timestamp else ""
-    return f'<b>{stripped_timestamp} {stripped_summ}</b> <small>({stripped_app})</small>\n<small>{stripped_body}</small>'
+    stripped_timestamp = f"{strip_tags (notification.timestamp)} " if notification.timestamp else ""
+    return f'<b>{stripped_timestamp}{stripped_summ}</b> <small>({stripped_app})</small>\n<small>{stripped_body}</small>'
 
 
 def call_rofi(entries: Iterable[str], additional_args: List[str] = None) -> (int, int):
