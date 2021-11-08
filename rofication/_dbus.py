@@ -15,7 +15,7 @@ NOTIFICATIONS_DBUS_OBJECT_PATH = '/org/freedesktop/Notifications'
 
 
 class RoficationDbusObject(service.Object):
-    def __init__(self, queue: NotificationQueue, datetime_format: str = None) -> None:
+    def __init__(self, queue: NotificationQueue) -> None:
         super().__init__(
             object_path=NOTIFICATIONS_DBUS_OBJECT_PATH,
             bus_name=service.BusName(
@@ -24,7 +24,6 @@ class RoficationDbusObject(service.Object):
             )
         )
         self._queue: NotificationQueue = queue
-        self._datetime_format: str = datetime_format
 
         def notification_seen(notification):
             if 'default' in notification.actions:
@@ -68,7 +67,7 @@ class RoficationDbusObject(service.Object):
         notification.summary = summary
         notification.body = body
         notification.hints = hints
-        notification.timestamp = datetime.now().strftime(self._datetime_format) if self._datetime_format else ""
+        notification.timestamp = datetime.now().timestamp()
         notification.actions = tuple(actions)
         if int(expire_timeout) > 0:
             notification.deadline = time.time() + expire_timeout / 1000.0
@@ -80,9 +79,9 @@ class RoficationDbusObject(service.Object):
 
 
 class RoficationDbusService:
-    def __init__(self, queue: NotificationQueue, datetime_format: str = None) -> None:
+    def __init__(self, queue: NotificationQueue) -> None:
         # preserve D-Bus object reference
-        self._object = RoficationDbusObject(queue, datetime_format)
+        self._object = RoficationDbusObject(queue)
         # create GLib mainloop, this is needed to make D-Bus work and takes care of catching signals.
         self._loop = MainLoop()
 

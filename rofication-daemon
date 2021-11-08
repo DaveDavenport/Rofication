@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     tsformat = Resource(env_name='i3xrocks_notify_timestamp_format', xres_name='i3xrocks.notify.timestamp.format', default='').fetch()
     not_queue = NotificationQueue.load('not.json')
-    service = RoficationDbusService(not_queue, tsformat)
+    service = RoficationDbusService(not_queue)
 
     with RoficationServer(not_queue) as server:
         server.start()
