@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 from rofication import RoficationServer, NotificationQueue, RoficationDbusService
 from rofication._util import Resource
 
