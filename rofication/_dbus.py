@@ -64,6 +64,7 @@ class RoficationDbusObject(service.Object):
         notification = Notification()
         notification.id = replaces_id
         notification.application = app_name
+        notification.icon = app_icon
         notification.summary = summary
         notification.body = body
         notification.hints = hints
