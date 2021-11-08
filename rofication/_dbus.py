@@ -66,6 +66,7 @@ class RoficationDbusObject(service.Object):
         notification.application = app_name
         notification.summary = summary
         notification.body = body
+        notification.hints = hints
         notification.timestamp = datetime.now().strftime(self._datetime_format) if self._datetime_format else ""
         notification.actions = tuple(actions)
         if int(expire_timeout) > 0:

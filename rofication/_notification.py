@@ -23,6 +23,7 @@ class Notification:
         self.application: Optional[str] = None
         self.urgency: Urgency = Urgency.NORMAL
         self.actions: Sequence[str] = ()
+        self.hints: Mapping[str, any] = {}
         self.timestamp = None
 
     def asdict(self) -> Mapping[str, any]:
@@ -38,5 +39,6 @@ class Notification:
         notification.application = dct.get('application')
         notification.urgency = Urgency(dct.get('urgency', Urgency.NORMAL))
         notification.actions = tuple(dct.get('actions', ()))
+        notification.hints = mapping(dct.get('hints'))
         notification.timestamp = dct.get('timestamp', '')
         return notification
