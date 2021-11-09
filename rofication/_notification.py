@@ -1,7 +1,6 @@
 from enum import IntEnum
 from typing import Sequence, Optional, Mapping
 
-
 class Urgency(IntEnum):
     LOW = 0
     NORMAL = 1
@@ -26,6 +25,7 @@ class Notification:
         self.urgency: Urgency = Urgency.NORMAL
         self.actions: Sequence[str] = ()
         self.hints: Mapping[str, any] = {}
+        self.timestamp = None
 
     def asdict(self) -> Mapping[str, any]:
         return {field: value for field, value in vars(self).items() if value is not None}
@@ -42,4 +42,5 @@ class Notification:
         notification.urgency = Urgency(dct.get('urgency', Urgency.NORMAL))
         notification.actions = tuple(dct.get('actions', ()))
         notification.hints = mapping(dct.get('hints'))
+        notification.timestamp = dct.get('timestamp', '')
         return notification

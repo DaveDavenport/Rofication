@@ -2,11 +2,13 @@ import re
 import struct
 import subprocess
 from typing import Iterable, List
+from datetime import datetime
 
 from gi.repository import GLib
 
 from ._client import RoficationClient
 from ._notification import Urgency, Notification
+from ._util import Resource
 
 HTML_TAGS_PATTERN = re.compile(r'<[^>]*?>')
 
@@ -32,12 +34,12 @@ def strip_tags(value: str) -> str:
     return GLib.markup_escape_text(HTML_TAGS_PATTERN.sub('', value))
 
 
-def rofi_entry(notification: Notification) -> str:
+def rofi_entry(notification: Notification, tsformat: str) -> str:
     stripped_summ = strip_tags(notification.summary)
     stripped_app = strip_tags(notification.application)
     stripped_body = strip_tags(' '.join(notification.body.split()))
-    return f'<b>{stripped_summ}</b> <small>({stripped_app})</small>\n<small>{stripped_body}</small>'
-
+    formatted_ts = f"{datetime.fromtimestamp(notification.timestamp).strftime(tsformat)} " if tsformat else ""
+    return f'<b>{formatted_ts}{stripped_summ}</b> <small>({stripped_app})</small>\n<small>{stripped_body}</small>'
 
 def call_rofi(entries: Iterable[str], additional_args: List[str] = None) -> (int, int):
     command = ROFI_COMMAND
@@ -63,6 +65,7 @@ def call_rofi(entries: Iterable[str], additional_args: List[str] = None) -> (int
 class RoficationGui():
     def __init__(self, client: RoficationClient = None):
         self._client: RoficationClient = RoficationClient() if client is None else client
+        self._tsformat = Resource(env_name='i3xrocks_notify_timestamp_format', xres_name='i3xrocks.notify.timestamp.format', default='').fetch()
 
     def run(self) -> None:
         selected = 0
@@ -76,7 +79,7 @@ class RoficationGui():
             # reassigns indices of notifications
             for index, notification in enumerate(self._client.list()):
                 notifications.append(notification)
-                entries.append(rofi_entry(notification))
+                entries.append(rofi_entry(notification, self._tsformat))
                 if notification.urgency == Urgency.CRITICAL:
                     urgent.append(str(index))
                 if notification.urgency == Urgency.LOW:
