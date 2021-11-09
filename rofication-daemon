@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 
+import os
+from pathlib import Path
 from rofication import RoficationServer, NotificationQueue, RoficationDbusService
 
 if __name__ == '__main__':
-    not_queue = NotificationQueue.load('not.json')
+    queue_dir = os.path.expanduser('~/.cache/rofication')
+    Path(queue_dir).mkdir(parents=True, exist_ok=True)
+
+    queue_file = os.path.join(queue_dir, "notifications.json")
+    not_queue = NotificationQueue.load(queue_file)
     service = RoficationDbusService(not_queue)
 
     with RoficationServer(not_queue) as server:
@@ -13,4 +19,4 @@ if __name__ == '__main__':
         except:
             server.shutdown()
 
-    not_queue.save('not.json')
+    not_queue.save(queue_file)
