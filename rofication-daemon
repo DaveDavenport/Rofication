@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
 from rofication import RoficationServer, NotificationQueue, RoficationDbusService
-from rofication._util import Resource
 
 if __name__ == '__main__':
-
-    tsformat = Resource(env_name='i3xrocks_notify_timestamp_format', xres_name='i3xrocks.notify.timestamp.format', default='').fetch()
     not_queue = NotificationQueue.load('not.json')
     service = RoficationDbusService(not_queue)
 
