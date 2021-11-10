@@ -41,6 +41,6 @@ class Notification:
         notification.icon = dct.get('icon')
         notification.urgency = Urgency(dct.get('urgency', Urgency.NORMAL))
         notification.actions = tuple(dct.get('actions', ()))
-        notification.hints = mapping(dct.get('hints'))
+        notification.hints = dct.get('hints')
         notification.timestamp = dct.get('timestamp', '')
         return notification
