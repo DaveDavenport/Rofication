@@ -1,3 +1,18 @@
+regolith-rofication (1.4.0-1) bionic; urgency=medium
+
+  [ Carlos Fernandez Sanz ]
+  * Add timestamp to notifications
+  * Make datetime format configurable via arg
+  * Add daemon
+  * Read timestamp format from XResources
+  * Made internal format a Python timestamp, convert to string in the UI
+
+  [ Ken Gilmer ]
+  * Feature: store the notification state of 'icon' (#13)
+  * Fix some typos in README (#12)
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Tue, 09 Nov 2021 19:16:04 -0800
+
 regolith-rofication (1.3.4-1) bionic; urgency=medium
 
   [ Jim Beatty ]
