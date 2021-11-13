@@ -1,3 +1,10 @@
+regolith-rofication (1.4.1-1) bionic; urgency=medium
+
+  [ Carlos Fernandez Sanz ]
+  * Change path of queue storage file so it's not directly in the home dir
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Sat, 13 Nov 2021 08:01:03 -0800
+
 regolith-rofication (1.4.0-1) bionic; urgency=medium
 
   [ Carlos Fernandez Sanz ]
