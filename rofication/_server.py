@@ -31,6 +31,11 @@ class RoficationRequestHandler(BaseRequestHandler):
         with self.server.queue.lock:
             self.server.queue.remove(nid)
 
+    def delete_multi(self, ids: str) -> None:
+        with self.server.queue.lock:
+            to_remove = [int(i) for i in ids.split(',')]
+            self.server.queue.remove_all(to_remove)
+
     def delete_all(self, application: str) -> None:
         with self.server.queue.lock:
             to_remove = [n.id for n in self.server.queue
@@ -57,6 +62,9 @@ class RoficationRequestHandler(BaseRequestHandler):
             elif cmd == 'del':
                 # dismiss an item.
                 self.delete(nid=int(args[0]))
+            elif cmd == 'delm':
+                # dismiss list of notifications.
+                self.delete_multi(ids=args[0])
             elif cmd == 'dela':
                 # dismiss all items from an application.
                 self.delete_all(application=args[0])

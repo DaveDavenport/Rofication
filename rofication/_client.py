@@ -29,6 +29,9 @@ class RoficationClient:
     def delete(self, nid: int) -> None:
         self._send('del', nid)
 
+    def delete_multi(self, ids: str) -> None:
+            self._send('delm', ids)
+
     def delete_all(self, application: str) -> None:
         self._send('dela', application)
 
