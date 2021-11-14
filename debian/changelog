@@ -1,3 +1,10 @@
+regolith-rofication (1.4.2-1) bionic; urgency=medium
+
+  [ Ken Gilmer ]
+  * Add command to delete list of notifications by id (#17)
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Sat, 13 Nov 2021 18:14:07 -0800
+
 regolith-rofication (1.4.1-1) bionic; urgency=medium
 
   [ Carlos Fernandez Sanz ]
