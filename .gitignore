@@ -3,3 +3,8 @@ __pycache__
 .idea
 venv
 not.json
+
+# Release
+build
+dist
+rofication.egg-info

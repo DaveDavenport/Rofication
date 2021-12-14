@@ -1,8 +1,7 @@
 import os
-from collections import MutableSequence, Callable
+from collections.abc import MutableSequence, Callable
 from subprocess import check_output
 from typing import Optional
-
 
 class Event:
     def __init__(self) -> None:
