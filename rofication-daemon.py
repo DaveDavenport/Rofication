@@ -3,7 +3,7 @@ import jsonpickle
 import dbus
 import dbus.service
 import dbus.mainloop.glib
-from gi.repository import GObject
+from gi.repository import GObject, Glib
 import os
 import subprocess
 import sys
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     # GMainLoop also takes care for catching signals.
     ##
     try:
-        GObject.MainLoop().run()
+        GLib.MainLoop().run()
     except:
         # Set event telling it to quit.
         event.set()
