@@ -3,7 +3,7 @@ import jsonpickle
 import dbus
 import dbus.service
 import dbus.mainloop.glib
-from gi.repository import GObject, Glib
+from gi.repository import GObject, GLib
 import os
 import subprocess
 import sys
