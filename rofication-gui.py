@@ -41,7 +41,7 @@ def call_rofi(entries, additional_args=[]):
                              '-kb-custom-3', 'Alt+r',
                              '-kb-custom-4', 'Alt+a',
                              '-markup-rows',
-                             '-sep', '\\0',
+                             '-sep', '\3',
                              '-format', 'i',
                              '-columns', '3',
                              '-lines', '4',
@@ -50,7 +50,7 @@ def call_rofi(entries, additional_args=[]):
     proc = subprocess.Popen(rofi_command+ additional_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     for e in entries:
         proc.stdin.write((e).encode('utf-8'))
-        proc.stdin.write(struct.pack('B', 0))
+        proc.stdin.write(struct.pack('B', 3))
     proc.stdin.close()
     answer = proc.stdout.read().decode("utf-8")
     exit_code = proc.wait()
@@ -86,10 +86,14 @@ while cont:
         if len(a) > 0:
             msg = jsonpickle.decode(a)
             ids.append(msg)
-            mst = ("<b>{summ}</b> <small>({app})</small>\n<i>{body}</i>".format(
+            mst = ("<b>{summ}</b> <small>({app})</small>".format(
                    summ=GLib.markup_escape_text(strip_tags(msg.summary)),
-                   app=GLib.markup_escape_text(strip_tags(msg.application)),
-                   body=GLib.markup_escape_text(strip_tags(msg.body.replace("\n"," ")))))
+                   app=GLib.markup_escape_text(strip_tags(msg.application))))
+            if len(msg.body) > 0:
+                mst+= "\n<i>{}</i>".format(GLib.markup_escape_text(strip_tags(msg.body.replace("\n"," "))))
+            if len(msg.app_icon) > 0:
+                mst += "\0icon\x1f{app_icon}".format(app_icon=msg.app_icon)
+
             entries.append(mst)
             if Urgency(msg.urgency) is Urgency.critical:
                 urgent.append(str(index))

@@ -180,6 +180,7 @@ class NotificationFetcher(dbus.service.Object):
         msg.mid          = self._id
         msg.summary      = str(summary)
         msg.body         = str(body)
+        msg.app_icon     = str(app_icon)
         if int(expire_timeout) > 0:
             msg.deadline = time.time()+int(expire_timeout) / 1000.0
         if 'urgency' in hints:
