@@ -117,6 +117,21 @@ class Rofication(threading.Thread):
                 if noti.mid == int(arg):
                     noti.urgency = int(Urgency.normal)
                     break
+    def communication_command_delete_similar(self, connection, arg):
+        with self.notification_queue_lock:
+            application = None
+            for noti in self.notification_queue:
+                if noti.mid == int(arg):
+                    application = noti.application 
+                    break
+            if application:
+                remove_q = []
+                for noti in self.notification_queue:
+                    if noti.application == application:
+                        remove_q.append(noti);
+                for noti in remove_q:
+                    self.notification_queue.remove(noti)
+
 
     def communication_command_num(self, connection):
         with self.notification_queue_lock:
@@ -146,6 +161,8 @@ class Rofication(threading.Thread):
                     # Dismiss and item.
                     elif command == "del":
                         self.communication_command_delete(connection,data.split(':')[1])
+                    elif command == "dels":
+                        self.communication_command_delete_similar(connection,data.split(':')[1])
                     elif command == "dela":
                         self.communication_command_delete_apps(connection,data.split(':')[1])
                     # Saw an item, this sets the urgency to normal.
