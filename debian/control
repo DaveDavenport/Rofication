@@ -19,13 +19,9 @@ Depends: ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends},
          python3-gi (>= 3.26.1),
-         python3-dbus (>= 1.2.6),
-         i3xrocks,
-         regolith-i3xrocks-config,
-         gnome-flashback
+         python3-dbus (>= 1.2.6)
 Provides: notification-daemon
 Replaces: notification-daemon
 Conflicts: notify-osd, dunst
-Breaks: i3xrocks-rofication (<< 3.5.3)
 Description: Rofication notification system
- Rofication provides an unobtrusive notification system based on a rofi frontend.
+ Rofication provides an unobtrusive notification system.
